@@ -1,0 +1,78 @@
+/* ============================================================
+   StayApp — Design System (Design Tokens)
+   Ένα κεντρικό σημείο για χρώματα, τυπογραφία, αποστάσεις.
+   Όλα τα components αναφέρονται σε αυτές τις μεταβλητές —
+   ΠΟΤΕ hardcoded χρώμα/μέγεθος μέσα στα component CSS.
+   ============================================================ */
+
+:root {
+  /* --- Παλέτα: deep ink + warm coral accent --- */
+  --color-bg: #f7f6f3;            /* warm off-white φόντο */
+  --color-surface: #ffffff;       /* κάρτες / πάνελ */
+  --color-surface-2: #f0eee9;     /* ελαφρώς βαθύτερη επιφάνεια */
+  --color-border: #e4e1da;
+
+  --color-ink: #1a1a2e;           /* βασικό κείμενο (σχεδόν μαύρο-μπλε) */
+  --color-ink-soft: #5c5b6b;      /* δευτερεύον κείμενο */
+  --color-ink-faint: #9a99a8;     /* placeholder / hints */
+
+  --color-primary: #e0533d;       /* coral — CTA, links ενεργά */
+  --color-primary-hover: #c8432f;
+  --color-primary-soft: #fdeae6;  /* φόντο badges/highlights */
+
+  --color-accent: #2b3a67;        /* deep indigo — headers, μενού */
+
+  /* --- Καταστάσεις (status / feedback) --- */
+  --color-success: #2e8b57;
+  --color-success-soft: #e3f3ea;
+  --color-warning: #c98a1b;
+  --color-warning-soft: #fbf0d9;
+  --color-danger: #c0392b;
+  --color-danger-soft: #fbe6e3;
+
+  /* --- Τυπογραφία --- */
+  --font-sans: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  --font-display: 'Fraunces', Georgia, 'Times New Roman', serif; /* για τίτλους */
+
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.375rem;
+  --text-2xl: 1.75rem;
+  --text-3xl: 2.5rem;
+
+  --weight-normal: 400;
+  --weight-medium: 500;
+  --weight-bold: 700;
+
+  --leading-tight: 1.2;
+  --leading-normal: 1.6;
+
+  /* --- Αποστάσεις (spacing scale, βήμα 4px) --- */
+  --space-1: 0.25rem;   /*  4px */
+  --space-2: 0.5rem;    /*  8px */
+  --space-3: 0.75rem;   /* 12px */
+  --space-4: 1rem;      /* 16px */
+  --space-5: 1.5rem;    /* 24px */
+  --space-6: 2rem;      /* 32px */
+  --space-8: 3rem;      /* 48px */
+  --space-10: 4rem;     /* 64px */
+
+  /* --- Γωνίες & σκιές --- */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-full: 999px;
+
+  --shadow-sm: 0 1px 2px rgba(26, 26, 46, 0.06);
+  --shadow-md: 0 4px 16px rgba(26, 26, 46, 0.08);
+  --shadow-lg: 0 12px 32px rgba(26, 26, 46, 0.12);
+
+  /* --- Layout --- */
+  --container-max: 1180px;
+  --header-height: 64px;
+
+  /* --- Μεταβάσεις --- */
+  --transition: 160ms ease;
+}

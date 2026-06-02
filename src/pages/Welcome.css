@@ -1,0 +1,50 @@
+.welcome {
+  background:
+    radial-gradient(circle at 15% 20%, rgba(224, 83, 61, 0.10), transparent 40%),
+    radial-gradient(circle at 85% 10%, rgba(43, 58, 103, 0.10), transparent 45%),
+    var(--color-bg);
+  min-height: calc(100vh - var(--header-height));
+  display: flex;
+  align-items: center;
+}
+
+.welcome__inner {
+  max-width: 760px;
+  padding-block: var(--space-10);
+  text-align: center;
+}
+
+.welcome__eyebrow {
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  color: var(--color-primary);
+  margin-bottom: var(--space-4);
+}
+
+.welcome__title {
+  font-size: clamp(2rem, 5vw, var(--text-3xl));
+  margin-bottom: var(--space-5);
+}
+.welcome__accent { color: var(--color-primary); }
+
+.welcome__lead {
+  font-size: var(--text-lg);
+  color: var(--color-ink-soft);
+  max-width: 56ch;
+  margin: 0 auto var(--space-6);
+}
+
+.welcome__cta {
+  display: flex;
+  gap: var(--space-3);
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-bottom: var(--space-5);
+}
+
+.welcome__note {
+  font-size: var(--text-sm);
+  color: var(--color-ink-soft);
+}
