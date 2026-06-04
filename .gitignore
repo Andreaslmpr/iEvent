@@ -1,0 +1,21 @@
+# Εικονικό Περιβάλλον (SOS - Ποτέ στο Git!)
+venv/
+env/
+.venv/
+
+# Κρυφά αρχεία Python (compiled bytecode)
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Περιβαλλοντικές Μεταβλητές 
+.env
+.env.*
+
+# Ρυθμίσεις του VS Code
+.vscode/
+
+# Τυχόν τοπικές βάσεις ή logs
+*.log
+*.sqlite3
