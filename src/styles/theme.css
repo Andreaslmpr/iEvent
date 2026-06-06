@@ -30,9 +30,9 @@
   --color-danger: #c0392b;
   --color-danger-soft: #fbe6e3;
 
-  /* --- Τυπογραφία --- */
+  /* --- Τυπογραφία (web fonts με ελληνική υποστήριξη) --- */
   --font-sans: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
-  --font-display: 'Fraunces', Georgia, 'Times New Roman', serif; /* για τίτλους */
+  --font-display: 'Cormorant Garamond', Georgia, 'Times New Roman', serif; /* κομψό serif για τίτλους */
 
   --text-xs: 0.75rem;
   --text-sm: 0.875rem;

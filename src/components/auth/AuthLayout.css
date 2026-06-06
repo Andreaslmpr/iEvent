@@ -1,0 +1,97 @@
+.auth {
+  display: grid;
+  grid-template-columns: 1.05fr 1fr;
+  min-height: 100vh;
+}
+
+/* ---------- Visual panel (αριστερά) ---------- */
+.auth__aside {
+  position: relative;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 20% 30%, #34457a 0%, transparent 55%),
+    radial-gradient(circle at 80% 80%, #3a2a4f 0%, transparent 50%),
+    var(--color-accent);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  padding: var(--space-10);
+}
+
+.auth__aside-content {
+  position: relative;
+  z-index: 1;
+  max-width: 420px;
+}
+
+.auth__brand {
+  font-family: var(--font-sans);
+  font-size: var(--text-xl);
+  font-weight: var(--weight-bold);
+  letter-spacing: 0.04em;
+  color: #fff;
+  text-transform: uppercase;
+}
+.auth__brand-accent { color: var(--color-primary); }
+
+.auth__quote {
+  font-family: var(--font-display);
+  font-size: clamp(1.8rem, 3.5vw, 2.9rem);
+  line-height: 1.25;
+  font-weight: 600;
+  margin-top: var(--space-8);
+  letter-spacing: 0.005em;
+}
+
+.auth__quote-sub {
+  margin-top: var(--space-5);
+  font-size: var(--text-sm);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.65);
+}
+
+/* Διακοσμητικό φωτεινό blob */
+.auth__aside-glow {
+  position: absolute;
+  width: 520px; height: 520px;
+  right: -160px; bottom: -200px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(224, 83, 61, 0.35), transparent 70%);
+  filter: blur(20px);
+}
+
+/* ---------- Form panel (δεξιά) ---------- */
+.auth__main {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-8) var(--space-6);
+  background: var(--color-bg);
+  overflow-y: auto;
+}
+
+.auth__form-wrap {
+  width: 100%;
+  max-width: 400px;
+}
+.auth__form-wrap--wide { max-width: 560px; }
+
+.auth__header { margin-bottom: var(--space-6); }
+
+.auth__title {
+  font-size: var(--text-3xl);
+  letter-spacing: 0.01em;
+}
+
+.auth__subtitle {
+  margin-top: var(--space-2);
+  color: var(--color-ink-soft);
+  font-size: var(--text-base);
+}
+
+/* ---------- Responsive: κρύβει το visual panel σε κινητά ---------- */
+@media (max-width: 860px) {
+  .auth { grid-template-columns: 1fr; }
+  .auth__aside { display: none; }
+}

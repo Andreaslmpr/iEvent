@@ -9,18 +9,23 @@ import Layout from './components/layout/Layout.jsx'
 import ProtectedRoute from './routes/ProtectedRoute.jsx'
 
 import Welcome from './pages/Welcome.jsx'
+import Login from './pages/auth/Login.jsx'
+import Register from './pages/auth/Register.jsx'
+import Pending from './pages/auth/Pending.jsx'
 import Placeholder from './pages/Placeholder.jsx'
 import NotFound from './pages/NotFound.jsx'
 
 export default function App() {
   return (
     <Routes>
+      {/* --- Auth σελίδες: δικό τους full-screen layout (χωρίς Header) --- */}
+      <Route path="/login" element={<Login />} />
+      <Route path="/register" element={<Register />} />
+      <Route path="/pending" element={<Pending />} />
+
       <Route element={<Layout />}>
         {/* --- Δημόσια (GUEST) --- */}
         <Route path="/" element={<Welcome />} />
-        <Route path="/login" element={<Placeholder title="Είσοδος" />} />
-        <Route path="/register" element={<Placeholder title="Εγγραφή" />} />
-        <Route path="/pending" element={<Placeholder title="Εκκρεμεί έγκριση" />} />
         <Route path="/events" element={<Placeholder title="Αναζήτηση εκδηλώσεων" />} />
         <Route path="/events/:id" element={<Placeholder title="Στοιχεία εκδήλωσης" />} />
 
