@@ -47,6 +47,13 @@
   background: var(--color-primary-soft);
 }
 
+.btn--muted {
+  background: var(--color-surface-2);
+  color: var(--color-ink);
+  border-color: var(--color-border);
+}
+.btn--muted:hover:not(:disabled) { background: var(--color-border); }
+
 .btn--lg { padding: var(--space-3) var(--space-6); font-size: var(--text-base); }
 
 /* --- Card --- */

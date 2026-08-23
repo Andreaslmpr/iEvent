@@ -1,8 +1,8 @@
 /* ============================================================
    App — κεντρικό routing της εφαρμογής.
    Δομή σελίδων σύμφωνα με την εκφώνηση & το API_CONTRACT.md.
-   Οι περισσότερες σελίδες είναι placeholders στη Φάση 0 και
-   υλοποιούνται στις επόμενες φάσεις.
+   Όσες σελίδες είναι ακόμη placeholders υλοποιούνται στις
+   επόμενες φάσεις (dashboard διοργανωτή, μηνύματα, admin).
    ============================================================ */
 import { Routes, Route } from 'react-router-dom'
 import Layout from './components/layout/Layout.jsx'
@@ -12,6 +12,9 @@ import Welcome from './pages/Welcome.jsx'
 import Login from './pages/auth/Login.jsx'
 import Register from './pages/auth/Register.jsx'
 import Pending from './pages/auth/Pending.jsx'
+import EventsList from './pages/events/EventsList.jsx'
+import EventDetail from './pages/events/EventDetail.jsx'
+import MyBookings from './pages/bookings/MyBookings.jsx'
 import Placeholder from './pages/Placeholder.jsx'
 import NotFound from './pages/NotFound.jsx'
 
@@ -26,8 +29,8 @@ export default function App() {
       <Route element={<Layout />}>
         {/* --- Δημόσια (GUEST) --- */}
         <Route path="/" element={<Welcome />} />
-        <Route path="/events" element={<Placeholder title="Αναζήτηση εκδηλώσεων" />} />
-        <Route path="/events/:id" element={<Placeholder title="Στοιχεία εκδήλωσης" />} />
+        <Route path="/events" element={<EventsList />} />
+        <Route path="/events/:id" element={<EventDetail />} />
 
         {/* --- Συνδεδεμένοι χρήστες (USER/ADMIN) --- */}
         <Route
@@ -42,7 +45,7 @@ export default function App() {
           path="/bookings"
           element={
             <ProtectedRoute allow={['USER', 'ADMIN']}>
-              <Placeholder title="Οι κρατήσεις μου" />
+              <MyBookings />
             </ProtectedRoute>
           }
         />
