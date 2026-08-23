@@ -13,6 +13,7 @@ import { getStoredUser } from '../auth/token.js'
 import {
   mockUsers, mockPasswords, mockEvents, mockBookings, mockMessages, nextId,
 } from './mock/db.js'
+import { eventsToXml } from './mock/xmlExport.js'
 
 export const USE_MOCK = true
 
@@ -444,4 +445,208 @@ export async function getEventBookings(id, params = {}) {
   }
   const { data } = await client.get(`/events/${id}/bookings`, { params })
   return data
+}
+
+// ------------------------------------------------------------
+// ADMIN (contract §2.2 — μόνο ρόλος ADMIN)
+// ------------------------------------------------------------
+function requireAdmin() {
+  const me = requireUser()
+  if (me.role !== 'ADMIN') {
+    throw apiError(403, 'FORBIDDEN', 'Απαιτούνται δικαιώματα διαχειριστή.')
+  }
+  return me
+}
+
+/* Λίστα χρηστών, προαιρετικά φιλτραρισμένη κατά status.
+   Οι εκκρεμείς αιτήσεις έρχονται πρώτες — αυτές περιμένουν ενέργεια. */
+export async function getUsers(params = {}) {
+  if (USE_MOCK) {
+    await delay()
+    requireAdmin()
+    let items = [...mockUsers]
+    if (params.status) items = items.filter((u) => u.status === params.status)
+    items.sort((a, b) => {
+      if (a.status !== b.status) {
+        if (a.status === 'PENDING') return -1
+        if (b.status === 'PENDING') return 1
+      }
+      return b.createdAt.localeCompare(a.createdAt)
+    })
+    return paginate(items, params.page, params.pageSize)
+  }
+  const { data } = await client.get('/admin/users', { params })
+  return data
+}
+
+export async function getUser(id) {
+  if (USE_MOCK) {
+    await delay()
+    requireAdmin()
+    const user = mockUsers.find((u) => u.id === Number(id))
+    if (!user) throw apiError(404, 'NOT_FOUND', 'Ο χρήστης δεν βρέθηκε.')
+    return structuredClone(user)
+  }
+  const { data } = await client.get(`/admin/users/${id}`)
+  return data
+}
+
+/* Έγκριση/απόρριψη αίτησης εγγραφής (εκφώνηση §4). */
+async function setUserStatus(id, status, path) {
+  if (USE_MOCK) {
+    await delay()
+    requireAdmin()
+    const user = mockUsers.find((u) => u.id === Number(id))
+    if (!user) throw apiError(404, 'NOT_FOUND', 'Ο χρήστης δεν βρέθηκε.')
+    if (user.role === 'ADMIN') {
+      throw apiError(403, 'FORBIDDEN', 'Ο λογαριασμός διαχειριστή δεν μεταβάλλεται.')
+    }
+    user.status = status
+    return { id: user.id, status: user.status }
+  }
+  const { data } = await client.post(`/admin/users/${id}/${path}`)
+  return data
+}
+
+export const approveUser = (id) => setUserStatus(id, 'APPROVED', 'approve')
+export const rejectUser = (id) => setUserStatus(id, 'REJECTED', 'reject')
+
+/* Εξαγωγή όλων των εκδηλώσεων (εκφώνηση §12).
+   Επιστρέφει ΠΑΝΤΑ κείμενο, ώστε το UI να κατεβάζει αρχείο ομοιόμορφα. */
+export async function exportEvents(format = 'xml') {
+  if (USE_MOCK) {
+    await delay()
+    requireAdmin()
+    return format === 'json'
+      ? JSON.stringify(mockEvents, null, 2)
+      : eventsToXml(mockEvents, mockBookings)
+  }
+  const { data } = await client.get('/admin/events/export', {
+    params: { format },
+    responseType: 'text',
+  })
+  return data
+}
+
+// ------------------------------------------------------------
+// MESSAGING (contract §2.5 · εκφώνηση §10)
+// ------------------------------------------------------------
+
+/* Η επικοινωνία επιτρέπεται εφόσον υπάρχει σχέση με την εκδήλωση:
+   ο αποστολέας είναι ο διοργανωτής της ή έχει κάνει κράτηση σε αυτήν. */
+function assertCanMessage(me, eventId) {
+  const event = mockEvents.find((e) => e.id === Number(eventId))
+  if (!event) throw apiError(404, 'NOT_FOUND', 'Η εκδήλωση δεν βρέθηκε.')
+  const isOrganizer = event.organizer.id === me.id
+  const hasBooking = mockBookings.some((b) => b.eventId === event.id && b.attendee.id === me.id)
+  if (!isOrganizer && !hasBooking) {
+    throw apiError(403, 'FORBIDDEN', 'Η επικοινωνία επιτρέπεται μετά από κράτηση στην εκδήλωση.')
+  }
+  return event
+}
+
+export async function getInbox(params = {}) {
+  if (USE_MOCK) {
+    await delay()
+    const me = requireUser()
+    const items = mockMessages
+      .filter((m) => m.toUser.id === me.id)
+      .sort((a, b) => b.sentAt.localeCompare(a.sentAt))
+    return paginate(items, params.page, params.pageSize)
+  }
+  const { data } = await client.get('/messages/inbox', { params })
+  return data
+}
+
+export async function getOutbox(params = {}) {
+  if (USE_MOCK) {
+    await delay()
+    const me = requireUser()
+    const items = mockMessages
+      .filter((m) => m.fromUser.id === me.id)
+      .sort((a, b) => b.sentAt.localeCompare(a.sentAt))
+    return paginate(items, params.page, params.pageSize)
+  }
+  const { data } = await client.get('/messages/outbox', { params })
+  return data
+}
+
+/* Για την ένδειξη νέων μηνυμάτων στο μενού (polling ~30s). */
+export async function getUnreadCount() {
+  if (USE_MOCK) {
+    const me = getStoredUser()
+    if (!me) return { count: 0 }
+    return { count: mockMessages.filter((m) => m.toUser.id === me.id && !m.read).length }
+  }
+  const { data } = await client.get('/messages/unread-count')
+  return data
+}
+
+export async function sendMessage({ toUserId, eventId, subject, body }) {
+  if (USE_MOCK) {
+    await delay()
+    const me = requireUser()
+
+    const recipient = mockUsers.find((u) => u.id === Number(toUserId))
+    if (!recipient) throw apiError(404, 'NOT_FOUND', 'Ο παραλήπτης δεν βρέθηκε.')
+    if (recipient.id === me.id) {
+      throw apiError(400, 'VALIDATION_ERROR', 'Δεν μπορείτε να στείλετε μήνυμα στον εαυτό σας.')
+    }
+    if (!subject?.trim() || !body?.trim()) {
+      throw apiError(400, 'VALIDATION_ERROR', 'Το θέμα και το κείμενο είναι υποχρεωτικά.', {
+        subject: !subject?.trim() ? 'Υποχρεωτικό πεδίο.' : undefined,
+        body: !body?.trim() ? 'Υποχρεωτικό πεδίο.' : undefined,
+      })
+    }
+    assertCanMessage(me, eventId)
+
+    const message = {
+      id: nextId(mockMessages),
+      fromUser: { id: me.id, username: me.username },
+      toUser: { id: recipient.id, username: recipient.username },
+      eventId: Number(eventId),
+      subject: subject.trim(),
+      body: body.trim(),
+      read: false,
+      sentAt: new Date().toISOString(),
+    }
+    mockMessages.push(message)
+    return message
+  }
+  const { data } = await client.post('/messages', { toUserId, eventId, subject, body })
+  return data
+}
+
+/* Το άνοιγμα μηνύματος το μαρκάρει ως διαβασμένο (contract §2.5). */
+export async function getMessage(id) {
+  if (USE_MOCK) {
+    await delay(150)
+    const me = requireUser()
+    const message = mockMessages.find((m) => m.id === Number(id))
+    if (!message) throw apiError(404, 'NOT_FOUND', 'Το μήνυμα δεν βρέθηκε.')
+    if (message.toUser.id !== me.id && message.fromUser.id !== me.id) {
+      throw apiError(403, 'FORBIDDEN', 'Δεν έχετε πρόσβαση σε αυτό το μήνυμα.')
+    }
+    if (message.toUser.id === me.id) message.read = true
+    return structuredClone(message)
+  }
+  const { data } = await client.get(`/messages/${id}`)
+  return data
+}
+
+export async function deleteMessage(id) {
+  if (USE_MOCK) {
+    await delay()
+    const me = requireUser()
+    const message = mockMessages.find((m) => m.id === Number(id))
+    if (!message) throw apiError(404, 'NOT_FOUND', 'Το μήνυμα δεν βρέθηκε.')
+    if (message.toUser.id !== me.id && message.fromUser.id !== me.id) {
+      throw apiError(403, 'FORBIDDEN', 'Δεν έχετε πρόσβαση σε αυτό το μήνυμα.')
+    }
+    // Στο πραγματικό backend η διαγραφή είναι ανά χρήστη (soft delete),
+    // ώστε να μη χάνεται το μήνυμα από τον άλλον κατάλογο.
+    mockMessages.splice(mockMessages.indexOf(message), 1)
+    return
+  }
+  await client.delete(`/messages/${id}`)
 }

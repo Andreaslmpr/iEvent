@@ -94,6 +94,7 @@ export default function EventBookings() {
                   <th className="bookings-table__num">Κόστος</th>
                   <th>Κατάσταση</th>
                   <th>Ημερομηνία</th>
+                  <th />
                 </tr>
               </thead>
               <tbody>
@@ -107,6 +108,14 @@ export default function EventBookings() {
                       <td className="bookings-table__num">{formatMoney(booking.totalCost)}</td>
                       <td><span className={`badge ${status.variant}`}>{status.label}</span></td>
                       <td>{formatDateTime(booking.time)}</td>
+                      <td className="bookings-table__num">
+                        <Link
+                          to={`/messages?to=${booking.attendee.id}&toName=${booking.attendee.username}&event=${booking.eventId}`}
+                          className="btn btn--muted"
+                        >
+                          Μήνυμα
+                        </Link>
+                      </td>
                     </tr>
                   )
                 })}

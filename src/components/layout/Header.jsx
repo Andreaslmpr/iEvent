@@ -6,11 +6,13 @@
    ============================================================ */
 import { NavLink, Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext.jsx'
+import { useUnreadCount } from '../../hooks/useUnreadCount.js'
 import './Header.css'
 
 export default function Header() {
   const { user, role, isAuthenticated, logout } = useAuth()
   const navigate = useNavigate()
+  const unread = useUnreadCount(isAuthenticated)
 
   function handleLogout() {
     logout()
@@ -31,7 +33,14 @@ export default function Header() {
             <>
               <NavLink to="/dashboard" className="header__link">Dashboard</NavLink>
               <NavLink to="/bookings" className="header__link">Κρατήσεις</NavLink>
-              <NavLink to="/messages" className="header__link">Μηνύματα</NavLink>
+              <NavLink to="/messages" className="header__link">
+                Μηνύματα
+                {unread > 0 && (
+                  <span className="header__badge" aria-label={`${unread} νέα μηνύματα`}>
+                    {unread}
+                  </span>
+                )}
+              </NavLink>
             </>
           )}
 

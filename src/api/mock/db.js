@@ -38,6 +38,34 @@ export const mockUsers = [
     afm: '456789123', status: 'PENDING', role: 'USER',
     createdAt: '2026-06-01T12:00:00Z',
   },
+  {
+    id: 21, username: 'kostas_dev', firstName: 'Κωνσταντίνος', lastName: 'Μαυρίδης',
+    email: 'kostas@example.com', phone: '+302610445566', address: 'Μαιζώνος 44',
+    city: 'Πάτρα', country: 'Greece', geoLocation: { lat: 38.2466, lng: 21.7346 },
+    afm: '321654987', status: 'PENDING', role: 'USER',
+    createdAt: '2026-06-26T08:30:00Z',
+  },
+  {
+    id: 22, username: 'anna_arts', firstName: 'Άννα', lastName: 'Κωνσταντίνου',
+    email: 'anna@example.com', phone: '+302105551234', address: 'Ιπποκράτους 18',
+    city: 'Αθήνα', country: 'Greece', geoLocation: { lat: 37.9812, lng: 23.7345 },
+    afm: '741852963', status: 'PENDING', role: 'USER',
+    createdAt: '2026-06-28T19:15:00Z',
+  },
+  {
+    id: 23, username: 'spam_account', firstName: 'Άγνωστος', lastName: 'Χρήστης',
+    email: 'noreply@spam.example', phone: '+300000000000', address: '—',
+    city: '—', country: 'Greece', geoLocation: { lat: 35.3387, lng: 25.1442 },
+    afm: '111111111', status: 'REJECTED', role: 'USER',
+    createdAt: '2026-06-12T03:20:00Z',
+  },
+  {
+    id: 24, username: 'giannis_p', firstName: 'Ιωάννης', lastName: 'Παπαδόπουλος',
+    email: 'giannis@example.com', phone: '+302310778899', address: 'Τσιμισκή 90',
+    city: 'Θεσσαλονίκη', country: 'Greece', geoLocation: { lat: 40.6318, lng: 22.9497 },
+    afm: '852741963', status: 'APPROVED', role: 'USER',
+    createdAt: '2026-05-05T14:00:00Z',
+  },
 ]
 
 /* Mock κωδικοί (μόνο για development — στο πραγματικό backend είναι hashed). */
@@ -46,6 +74,7 @@ export const mockPasswords = {
   maria21: 'maria123',
   org_athens_events: 'nikos123',
   pending_user: 'elena123',
+  giannis_p: 'giannis123',
 }
 
 /* Κατηγορίες για το φίλτρο αναζήτησης. */

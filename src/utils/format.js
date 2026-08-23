@@ -93,3 +93,10 @@ export function fromInputDateTime(local) {
   if (!local) return ''
   return new Date(local).toISOString()
 }
+
+/* Ετικέτες κατάστασης λογαριασμού (σελίδα διαχείρισης χρηστών). */
+export const USER_STATUS = {
+  PENDING: { label: 'Εκκρεμεί έγκριση', variant: 'badge--warning' },
+  APPROVED: { label: 'Εγκεκριμένος', variant: 'badge--success' },
+  REJECTED: { label: 'Απορρίφθηκε', variant: 'badge--danger' },
+}

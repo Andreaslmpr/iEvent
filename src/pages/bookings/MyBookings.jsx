@@ -81,6 +81,10 @@ export default function MyBookings() {
                   <div className="booking-row__side">
                     <span className={`badge ${status.variant}`}>{status.label}</span>
                     <span className="booking-row__cost">{formatMoney(booking.totalCost)}</span>
+                    {/* Η επικοινωνία με τον διοργανωτή επιτρέπεται μετά την κράτηση. */}
+                    <Link to={`/messages?event=${booking.eventId}`} className="btn btn--muted">
+                      Μήνυμα στον διοργανωτή
+                    </Link>
                   </div>
                 </article>
               )

@@ -1,0 +1,76 @@
+/* ============================================================
+   Σελίδες διαχειριστή: λίστα χρηστών & στοιχεία χρήστη.
+   ============================================================ */
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+  margin-bottom: var(--space-5);
+}
+
+.tabs { display: flex; gap: var(--space-2); flex-wrap: wrap; }
+
+.tab {
+  padding: var(--space-2) var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-full);
+  background: var(--color-surface);
+  font-size: var(--text-sm);
+  color: var(--color-ink-soft);
+  transition: border-color var(--transition), background var(--transition), color var(--transition);
+}
+.tab:hover { border-color: var(--color-primary); }
+.tab--on {
+  border-color: var(--color-primary);
+  background: var(--color-primary-soft);
+  color: var(--color-primary-hover);
+  font-weight: var(--weight-medium);
+}
+
+.users-table { width: 100%; border-collapse: collapse; font-size: var(--text-sm); }
+.users-table th,
+.users-table td {
+  text-align: left;
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--color-border);
+  vertical-align: middle;
+}
+.users-table th {
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-ink-faint);
+  font-weight: var(--weight-medium);
+}
+.users-table tbody tr:last-child td { border-bottom: none; }
+.users-table tbody tr:hover { background: var(--color-surface-2); }
+
+.users-table__actions { display: flex; gap: var(--space-2); justify-content: flex-end; flex-wrap: wrap; }
+.users-table__actions .btn { font-size: var(--text-xs); padding: var(--space-1) var(--space-3); }
+
+.btn--success {
+  background: transparent;
+  color: var(--color-success);
+  border-color: var(--color-success);
+}
+.btn--success:hover:not(:disabled) { background: var(--color-success-soft); }
+
+/* --- Σελίδα στοιχείων χρήστη --- */
+.user-card { padding: var(--space-6); }
+
+.user-card__head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+  margin-bottom: var(--space-5);
+  padding-bottom: var(--space-5);
+  border-bottom: 1px solid var(--color-border);
+}
+.user-card__name { font-family: var(--font-display); font-size: var(--text-2xl); }
+.user-card__username { color: var(--color-ink-soft); font-size: var(--text-sm); }
+
+.user-card__actions { margin-left: auto; display: flex; gap: var(--space-2); flex-wrap: wrap; }

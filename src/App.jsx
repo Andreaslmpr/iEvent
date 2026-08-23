@@ -1,8 +1,6 @@
 /* ============================================================
    App — κεντρικό routing της εφαρμογής.
    Δομή σελίδων σύμφωνα με την εκφώνηση & το API_CONTRACT.md.
-   Όσες σελίδες είναι ακόμη placeholders υλοποιούνται στις
-   επόμενες φάσεις (dashboard διοργανωτή, μηνύματα, admin).
    ============================================================ */
 import { Routes, Route } from 'react-router-dom'
 import Layout from './components/layout/Layout.jsx'
@@ -19,7 +17,9 @@ import Dashboard from './pages/dashboard/Dashboard.jsx'
 import EventCreate from './pages/dashboard/EventCreate.jsx'
 import EventEdit from './pages/dashboard/EventEdit.jsx'
 import EventBookings from './pages/dashboard/EventBookings.jsx'
-import Placeholder from './pages/Placeholder.jsx'
+import AdminUsers from './pages/admin/AdminUsers.jsx'
+import UserDetail from './pages/admin/UserDetail.jsx'
+import Messages from './pages/messages/Messages.jsx'
 import NotFound from './pages/NotFound.jsx'
 
 export default function App() {
@@ -81,7 +81,7 @@ export default function App() {
           path="/messages"
           element={
             <ProtectedRoute allow={['USER', 'ADMIN']}>
-              <Placeholder title="Μηνύματα" />
+              <Messages />
             </ProtectedRoute>
           }
         />
@@ -91,7 +91,15 @@ export default function App() {
           path="/admin"
           element={
             <ProtectedRoute allow={['ADMIN']}>
-              <Placeholder title="Διαχείριση χρηστών" />
+              <AdminUsers />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/users/:id"
+          element={
+            <ProtectedRoute allow={['ADMIN']}>
+              <UserDetail />
             </ProtectedRoute>
           }
         />
