@@ -15,6 +15,10 @@ import Pending from './pages/auth/Pending.jsx'
 import EventsList from './pages/events/EventsList.jsx'
 import EventDetail from './pages/events/EventDetail.jsx'
 import MyBookings from './pages/bookings/MyBookings.jsx'
+import Dashboard from './pages/dashboard/Dashboard.jsx'
+import EventCreate from './pages/dashboard/EventCreate.jsx'
+import EventEdit from './pages/dashboard/EventEdit.jsx'
+import EventBookings from './pages/dashboard/EventBookings.jsx'
 import Placeholder from './pages/Placeholder.jsx'
 import NotFound from './pages/NotFound.jsx'
 
@@ -37,7 +41,31 @@ export default function App() {
           path="/dashboard"
           element={
             <ProtectedRoute allow={['USER', 'ADMIN']}>
-              <Placeholder title="Dashboard Διοργανωτή" />
+              <Dashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/dashboard/events/new"
+          element={
+            <ProtectedRoute allow={['USER', 'ADMIN']}>
+              <EventCreate />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/dashboard/events/:id/edit"
+          element={
+            <ProtectedRoute allow={['USER', 'ADMIN']}>
+              <EventEdit />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/dashboard/events/:id/bookings"
+          element={
+            <ProtectedRoute allow={['USER', 'ADMIN']}>
+              <EventBookings />
             </ProtectedRoute>
           }
         />

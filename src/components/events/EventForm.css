@@ -1,0 +1,139 @@
+/* ============================================================
+   Φόρμα δημιουργίας/επεξεργασίας εκδήλωσης.
+   Χτισμένη πάνω στο κοινό <Field> (form.css) — εδώ μόνο η διάταξη
+   και τα κομμάτια που το Field δεν καλύπτει (κατηγορίες, εισιτήρια).
+   ============================================================ */
+
+.eform { display: flex; flex-direction: column; gap: var(--space-6); }
+
+.eform__section {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-5);
+  box-shadow: var(--shadow-sm);
+}
+
+.eform__legend {
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  font-weight: var(--weight-bold);
+  margin-bottom: var(--space-4);
+}
+
+.eform__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: var(--space-4);
+}
+
+.eform__hint {
+  font-size: var(--text-xs);
+  color: var(--color-ink-soft);
+  margin-top: var(--space-2);
+}
+
+/* --- Κατηγορίες (πολλαπλή επιλογή) --- */
+.eform__chips { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-full);
+  font-size: var(--text-sm);
+  cursor: pointer;
+  transition: border-color var(--transition), background var(--transition);
+}
+.chip:hover { border-color: var(--color-primary); }
+.chip--on { border-color: var(--color-primary); background: var(--color-primary-soft); color: var(--color-primary-hover); }
+
+/* --- Τύποι εισιτηρίων (επαναλαμβανόμενες γραμμές) --- */
+.tickets { display: flex; flex-direction: column; gap: var(--space-3); }
+
+.tickets__head,
+.ticket-row {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr auto;
+  gap: var(--space-3);
+  align-items: center;
+}
+
+.tickets__head span {
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-ink-faint);
+}
+
+.ticket-row__input {
+  width: 100%;
+  padding: var(--space-2) var(--space-3);
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  font-size: var(--text-sm);
+}
+.ticket-row__input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px var(--color-primary-soft);
+}
+
+.ticket-row__remove {
+  background: none;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  color: var(--color-ink-soft);
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--text-sm);
+}
+.ticket-row__remove:hover:not(:disabled) { color: var(--color-danger); border-color: var(--color-danger); }
+.ticket-row__remove:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.ticket-row__error {
+  grid-column: 1 / -1;
+  font-size: var(--text-xs);
+  color: var(--color-danger);
+}
+
+.tickets__sum {
+  display: flex;
+  justify-content: space-between;
+  font-size: var(--text-sm);
+  color: var(--color-ink-soft);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--color-border);
+}
+.tickets__sum--over { color: var(--color-danger); font-weight: var(--weight-medium); }
+
+/* --- Ενέργειες --- */
+.eform__actions {
+  display: flex;
+  gap: var(--space-3);
+  justify-content: flex-end;
+  flex-wrap: wrap;
+}
+
+.eform__textarea {
+  width: 100%;
+  min-height: 130px;
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  font-size: var(--text-base);
+  resize: vertical;
+}
+.eform__textarea:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px var(--color-primary-soft);
+}
+
+@media (max-width: 620px) {
+  .tickets__head { display: none; }
+  .ticket-row { grid-template-columns: 1fr 1fr; }
+}

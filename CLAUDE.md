@@ -58,7 +58,7 @@ src/
 0. ✅ Scaffold + routing + auth context + design system
 1. ✅ Auth pages (Welcome/Login/Register/Pending)
 2. ✅ Core USER (αναζήτηση, σελίδα event + χάρτης, κράτηση)
-3. Dashboard διοργανωτή (φόρμα event, κρατήσεις)
+3. ✅ Dashboard διοργανωτή (φόρμα event, κρατήσεις)
 4. Admin panel + Messaging
 5. Bonus widget συστάσεων
 6. Σκλήρυνση (security/simplify/polish)

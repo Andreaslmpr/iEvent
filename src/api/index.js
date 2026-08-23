@@ -10,7 +10,9 @@
    ============================================================ */
 import client from './client.js'
 import { getStoredUser } from '../auth/token.js'
-import { mockUsers, mockPasswords, mockEvents, mockBookings, nextId } from './mock/db.js'
+import {
+  mockUsers, mockPasswords, mockEvents, mockBookings, mockMessages, nextId,
+} from './mock/db.js'
 
 export const USE_MOCK = true
 
@@ -233,5 +235,213 @@ export async function getMyBookings(params = {}) {
     return paginate(items, params.page, params.pageSize)
   }
   const { data } = await client.get('/bookings/mine', { params })
+  return data
+}
+
+// ------------------------------------------------------------
+// EVENTS — διαχείριση από τον διοργανωτή (owner-only ενέργειες)
+// ------------------------------------------------------------
+
+/* Ο συνδεδεμένος χρήστης — αλλιώς 401 (στο πραγματικό API το κρίνει το JWT). */
+function requireUser() {
+  const me = getStoredUser()
+  if (!me) throw apiError(401, 'UNAUTHENTICATED', 'Απαιτείται σύνδεση.')
+  return me
+}
+
+/* Εκδήλωση που ανήκει στον χρήστη — αλλιώς 404/403. */
+function requireOwnedEvent(id, me) {
+  const event = mockEvents.find((e) => e.id === Number(id))
+  if (!event) throw apiError(404, 'NOT_FOUND', 'Η εκδήλωση δεν βρέθηκε.')
+  if (event.organizer.id !== me.id) {
+    throw apiError(403, 'FORBIDDEN', 'Δεν είστε ο διοργανωτής αυτής της εκδήλωσης.')
+  }
+  return event
+}
+
+/* Invariant του contract: Σ(quantity) ≤ capacity. */
+function assertCapacity(payload) {
+  const sum = payload.ticketTypes.reduce((t, type) => t + Number(type.quantity), 0)
+  if (sum > Number(payload.capacity)) {
+    throw apiError(409, 'CAPACITY_EXCEEDED',
+      `Το σύνολο των εισιτηρίων (${sum}) ξεπερνά τη χωρητικότητα (${payload.capacity}).`)
+  }
+}
+
+/* Επόμενο id τύπου εισιτηρίου — μοναδικό σε όλες τις εκδηλώσεις. */
+function nextTicketTypeId() {
+  const all = mockEvents.flatMap((e) => e.ticketTypes)
+  return all.reduce((max, t) => Math.max(max, t.id), 0) + 1
+}
+
+/* Οι εκδηλώσεις που διοργανώνω — όλα τα statuses (contract §2.3). */
+export async function getMyEvents(params = {}) {
+  if (USE_MOCK) {
+    await delay()
+    const me = requireUser()
+    const items = mockEvents
+      .filter((e) => e.organizer.id === me.id)
+      .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+    return paginate(items, params.page, params.pageSize)
+  }
+  const { data } = await client.get('/events/mine', { params })
+  return data
+}
+
+/* Δημιουργία: ο server ορίζει status/available/reservedTotal. */
+export async function createEvent(payload) {
+  if (USE_MOCK) {
+    await delay()
+    const me = requireUser()
+    assertCapacity(payload)
+
+    let ticketId = nextTicketTypeId()
+    const event = {
+      ...payload,
+      id: nextId(mockEvents),
+      capacity: Number(payload.capacity),
+      ticketTypes: payload.ticketTypes.map((t) => ({
+        id: ticketId++,
+        name: t.name,
+        price: Number(t.price).toFixed(2),
+        quantity: Number(t.quantity),
+        available: Number(t.quantity),
+      })),
+      organizer: { id: me.id, username: me.username },
+      status: 'DRAFT',
+      media: payload.media ?? [],
+      reservedTotal: 0,
+      isDeletable: true,
+      createdAt: new Date().toISOString(),
+    }
+    mockEvents.push(event)
+    return structuredClone(event)
+  }
+  const { data } = await client.post('/events', payload)
+  return data
+}
+
+/* Ενημέρωση (owner). Οι ήδη κρατημένες θέσεις δεν χάνονται. */
+export async function updateEvent(id, payload) {
+  if (USE_MOCK) {
+    await delay()
+    const me = requireUser()
+    const event = requireOwnedEvent(id, me)
+    assertCapacity(payload)
+
+    let ticketId = nextTicketTypeId()
+    const ticketTypes = payload.ticketTypes.map((t) => {
+      const existing = event.ticketTypes.find((x) => x.id === t.id)
+      const quantity = Number(t.quantity)
+      if (!existing) {
+        return { id: ticketId++, name: t.name, price: Number(t.price).toFixed(2), quantity, available: quantity }
+      }
+      // Οι κρατημένες θέσεις αυτού του τύπου δεν μπορούν να «εξαφανιστούν».
+      const reserved = existing.quantity - existing.available
+      if (quantity < reserved) {
+        throw apiError(409, 'CAPACITY_EXCEEDED',
+          `Ο τύπος «${existing.name}» έχει ήδη ${reserved} κρατήσεις — δεν μπορεί να πέσει κάτω από αυτές.`)
+      }
+      return { id: existing.id, name: t.name, price: Number(t.price).toFixed(2), quantity, available: quantity - reserved }
+    })
+
+    Object.assign(event, {
+      ...payload,
+      id: event.id,
+      capacity: Number(payload.capacity),
+      ticketTypes,
+      organizer: event.organizer,
+      status: event.status,
+      reservedTotal: event.reservedTotal,
+      isDeletable: event.status === 'DRAFT' && event.reservedTotal === 0,
+      createdAt: event.createdAt,
+    })
+    return structuredClone(event)
+  }
+  const { data } = await client.put(`/events/${id}`, payload)
+  return data
+}
+
+/* Διαγραφή: επιτρέπεται μόνο σε πρόχειρη εκδήλωση χωρίς κρατήσεις. */
+export async function deleteEvent(id) {
+  if (USE_MOCK) {
+    await delay()
+    const me = requireUser()
+    const event = requireOwnedEvent(id, me)
+    const hasBookings = mockBookings.some((b) => b.eventId === event.id)
+    if (event.status !== 'DRAFT' || hasBookings) {
+      throw apiError(409, 'DELETE_NOT_ALLOWED',
+        'Διαγράφονται μόνο πρόχειρες εκδηλώσεις χωρίς κρατήσεις.')
+    }
+    mockEvents.splice(mockEvents.indexOf(event), 1)
+    return
+  }
+  await client.delete(`/events/${id}`)
+}
+
+/* Δημοσίευση: η εκδήλωση γίνεται ορατή στην αναζήτηση και δέχεται κρατήσεις. */
+export async function publishEvent(id) {
+  if (USE_MOCK) {
+    await delay()
+    const me = requireUser()
+    const event = requireOwnedEvent(id, me)
+    if (event.status !== 'DRAFT') {
+      throw apiError(409, 'EVENT_NOT_ACTIVE', 'Μόνο πρόχειρες εκδηλώσεις δημοσιεύονται.')
+    }
+    event.status = 'PUBLISHED'
+    event.isDeletable = false
+    return structuredClone(event)
+  }
+  const { data } = await client.post(`/events/${id}/publish`)
+  return data
+}
+
+/* Ακύρωση: τα δεδομένα διατηρούνται (ιστορικότητα) και ο server
+   ειδοποιεί όσους έχουν κράτηση (εκφώνηση §10). */
+export async function cancelEvent(id, note = '') {
+  if (USE_MOCK) {
+    await delay()
+    const me = requireUser()
+    const event = requireOwnedEvent(id, me)
+    if (event.status !== 'PUBLISHED') {
+      throw apiError(409, 'EVENT_NOT_ACTIVE', 'Ακυρώνονται μόνο δημοσιευμένες εκδηλώσεις.')
+    }
+    event.status = 'CANCELLED'
+
+    // Μαζικό μήνυμα σε κάθε συμμετέχοντα με κράτηση (μία φορά ανά χρήστη).
+    const attendees = new Map()
+    for (const b of mockBookings.filter((b) => b.eventId === event.id)) {
+      attendees.set(b.attendee.id, b.attendee)
+    }
+    for (const attendee of attendees.values()) {
+      mockMessages.push({
+        id: nextId(mockMessages),
+        fromUser: { id: me.id, username: me.username },
+        toUser: attendee,
+        eventId: event.id,
+        subject: `Ακύρωση: ${event.title}`,
+        body: note || 'Η εκδήλωση ακυρώθηκε. Λυπούμαστε για την αναστάτωση.',
+        read: false,
+        sentAt: new Date().toISOString(),
+      })
+    }
+    return structuredClone(event)
+  }
+  const { data } = await client.post(`/events/${id}/cancel`, { note })
+  return data
+}
+
+/* Οι κρατήσεις μιας εκδήλωσης — μόνο ο διοργανωτής της. */
+export async function getEventBookings(id, params = {}) {
+  if (USE_MOCK) {
+    await delay()
+    const me = requireUser()
+    const event = requireOwnedEvent(id, me)
+    const items = mockBookings
+      .filter((b) => b.eventId === event.id)
+      .sort((a, b) => b.time.localeCompare(a.time))
+    return paginate(items, params.page, params.pageSize)
+  }
+  const { data } = await client.get(`/events/${id}/bookings`, { params })
   return data
 }

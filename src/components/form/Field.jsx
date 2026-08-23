@@ -16,6 +16,10 @@ export default function Field({
   required = false,
   autoComplete,
   placeholder,
+  min,
+  max,
+  step,
+  disabled = false,
 }) {
   const showError = error && touched
   return (
@@ -34,6 +38,10 @@ export default function Field({
         onBlur={onBlur}
         autoComplete={autoComplete}
         placeholder={placeholder}
+        min={min}
+        max={max}
+        step={step}
+        disabled={disabled}
         aria-invalid={showError ? 'true' : 'false'}
         aria-describedby={showError ? `${name}-error` : undefined}
       />

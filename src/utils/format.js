@@ -73,3 +73,23 @@ export const BOOKING_STATUS = {
 export function errorMessage(err, fallback = 'Κάτι πήγε στραβά. Δοκιμάστε ξανά.') {
   return err?.response?.data?.error?.message || fallback
 }
+
+/* ------------------------------------------------------------
+   Γέφυρα ημερομηνιών φόρμας ↔ API.
+   Το <input type="datetime-local"> δουλεύει σε ΤΟΠΙΚΗ ώρα, ενώ
+   το API θέλει ISO-8601 σε UTC (contract §0).
+   ------------------------------------------------------------ */
+
+/* ISO UTC → «2026-07-12T23:30» για το input. */
+export function toInputDateTime(iso) {
+  if (!iso) return ''
+  const d = new Date(iso)
+  const pad = (n) => String(n).padStart(2, '0')
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`
+}
+
+/* Τιμή του input (τοπική ώρα) → ISO UTC για το API. */
+export function fromInputDateTime(local) {
+  if (!local) return ''
+  return new Date(local).toISOString()
+}
