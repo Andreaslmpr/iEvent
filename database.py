@@ -1,8 +1,13 @@
+import os
 import sqlalchemy
 import sqlalchemy.orm
+from dotenv import load_dotenv
 
-# Σύνδεση με τη MySQL (Username:Password@Host:Port/DatabaseName)
-SQLALCHEMY_DATABASE_URL = "root://andreas292002!@127.0.0.1:3306/staywebapp"
+# Φορτώνουμε τις μεταβλητές από το .env (DATABASE_URL, JWT_SECRET_KEY κ.λπ.)
+load_dotenv()
+
+# Σύνδεση με τη MySQL — το URL ζει στο .env ώστε ο κωδικός να μην ανέβει στο Git
+SQLALCHEMY_DATABASE_URL = os.getenv("DATABASE_URL")
 
 #SQLAlchemy
 engine = sqlalchemy.create_engine(SQLALCHEMY_DATABASE_URL)

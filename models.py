@@ -71,7 +71,9 @@ class EventCategory(Base):
 
     # Το όνομα της στήλης στη βάση είναι event-categories_id (με παύλα)
     id = Column("event-categories_id", Integer, primary_key=True, index=True)
-    category_name = Column(String(45), nullable=False)
+    # UNIQUE: η κατηγορία "Music" υπάρχει ΜΙΑ φορά και τη μοιράζονται όλες οι
+    # εκδηλώσεις μέσω του event_has_categories (βλ. db/migrations/001_*.sql).
+    category_name = Column(String(45), unique=True, nullable=False)
 
     events = relationship("Event", secondary=event_has_categories, back_populates="categories")
 
