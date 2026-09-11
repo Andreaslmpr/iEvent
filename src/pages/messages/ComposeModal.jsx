@@ -21,14 +21,21 @@ export default function ComposeModal({ eventId, toUserId, toName, onClose, onSen
   const [sending, setSending] = useState(false)
   const [error, setError] = useState('')
 
+  /* Φέρνουμε την εκδήλωση ΜΟΝΟ όταν τη χρειαζόμαστε, δηλαδή όταν λείπει ο
+     παραλήπτης και πρέπει να βρούμε τον διοργανωτή.
+
+     Στην απάντηση (υπάρχει ήδη toUserId) δεν καλούμε το GET /events/{id}:
+     έχει παρενέργεια — καταγράφει EventVisit για τον recommender. Ένα άνοιγμα
+     modal δεν είναι επίσκεψη σε σελίδα εκδήλωσης και θα νόθευε τις συστάσεις. */
   useEffect(() => {
+    if (toUserId) return undefined
+
     let cancelled = false
     getEvent(eventId)
       .then((data) => {
         if (cancelled) return
         setEvent(data)
-        // Χωρίς ρητό παραλήπτη, γράφουμε στον διοργανωτή.
-        if (!toUserId) setRecipient({ id: data.organizer.id, name: data.organizer.username })
+        setRecipient({ id: data.organizer.id, name: data.organizer.username })
       })
       .catch((err) => { if (!cancelled) setError(errorMessage(err, 'Η εκδήλωση δεν βρέθηκε.')) })
 
@@ -59,8 +66,10 @@ export default function ComposeModal({ eventId, toUserId, toName, onClose, onSen
       <Alert kind="error">{error}</Alert>
 
       <p className="compose__to">
-        <strong>Προς:</strong> {recipient.name ?? '…'}<br />
-        <strong>Σχετικά με:</strong> {event?.title ?? '…'}
+        <strong>Προς:</strong> {recipient.name ?? '…'}
+        {/* Τον τίτλο τον ξέρουμε μόνο όταν φέραμε την εκδήλωση· στην απάντηση
+            δεν την ξαναφέρνουμε (βλ. σχόλιο στο useEffect). */}
+        {event && <><br /><strong>Σχετικά με:</strong> {event.title}</>}
       </p>
 
       <input

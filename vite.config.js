@@ -7,9 +7,14 @@ export default defineConfig({
   server: {
     port: 5173,
     proxy: {
-      // Όταν φύγουμε από mock-first, τα /api requests προωθούνται στο backend του Ανδρέα.
-      // Το ενεργοποιούμε στη Φάση integration — προς το παρόν το api layer δουλεύει με mocks.
-      // '/api': { target: 'https://localhost:8000', changeOrigin: true, secure: false },
+      // Τα /api requests προωθούνται στο backend του Ανδρέα.
+      //
+      // Γιατί proxy και όχι απευθείας https://localhost:8000/api:
+      //  - Ο browser βλέπει same-origin → κανένα CORS preflight.
+      //  - Το secure:false δέχεται το self-signed πιστοποιητικό ΕΔΩ (Node),
+      //    οπότε δεν χρειάζεται ο χρήστης να κάνει εξαίρεση στον browser.
+      // Για απευθείας κλήσεις: VITE_API_BASE_URL στο .env.local (βλ. .env.example).
+      '/api': { target: 'https://localhost:8000', changeOrigin: true, secure: false },
     },
   },
 })

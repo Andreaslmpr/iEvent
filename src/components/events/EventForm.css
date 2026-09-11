@@ -82,6 +82,13 @@
   box-shadow: 0 0 0 3px var(--color-primary-soft);
 }
 
+/* Κλειδωμένο όνομα τύπου που έχει κρατήσεις (βλ. EventForm.jsx). */
+.ticket-row__input:disabled {
+  background: var(--color-surface-2);
+  color: var(--color-ink-soft);
+  cursor: not-allowed;
+}
+
 .ticket-row__remove {
   background: none;
   border: 1px solid var(--color-border);

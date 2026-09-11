@@ -1,14 +1,17 @@
 /* ============================================================
    Messages — σελίδα μηνυμάτων (εκφώνηση §10).
    Κατάλογοι εισερχομένων/απεσταλμένων, άνοιγμα μηνύματος (που το
-   μαρκάρει ως διαβασμένο), απάντηση και διαγραφή.
+   μαρκάρει ως διαβασμένο) και απάντηση.
+
+   Διαγραφή δεν υπάρχει: το backend δεν έχει DELETE /messages/{id}
+   (κοινή γραμμή για inbox/outbox — θέλει migration 002).
 
    Η σύνθεση ξεκινά πάντα από εκδήλωση: άλλες σελίδες οδηγούν εδώ με
    ?event=<id> (μήνυμα στον διοργανωτή) ή ?to=<id>&toName=<username>.
    ============================================================ */
 import { useCallback, useEffect, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { getInbox, getOutbox, getMessage, deleteMessage } from '../../api/index.js'
+import { getInbox, getOutbox, getMessage } from '../../api/index.js'
 import Loader from '../../components/ui/Loader.jsx'
 import EmptyState from '../../components/ui/EmptyState.jsx'
 import Alert from '../../components/ui/Alert.jsx'
@@ -82,18 +85,6 @@ export default function Messages() {
       if (isInbox && !message.read) reload()
     } catch (err) {
       setError(errorMessage(err, 'Το μήνυμα δεν άνοιξε.'))
-    }
-  }
-
-  async function remove(message) {
-    setError('')
-    try {
-      await deleteMessage(message.id)
-      setOpened(null)
-      setNotice('Το μήνυμα διαγράφηκε.')
-      reload()
-    } catch (err) {
-      setError(errorMessage(err, 'Η διαγραφή απέτυχε.'))
     }
   }
 
@@ -183,9 +174,6 @@ export default function Messages() {
                   })}
                 >
                   Απάντηση
-                </button>
-                <button className="btn btn--danger" onClick={() => remove(opened)}>
-                  Διαγραφή
                 </button>
               </div>
             </article>

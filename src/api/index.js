@@ -7,6 +7,10 @@
 
    Κάθε function δείχνει ΚΑΙ τις δύο διαδρομές (mock + real) ώστε,
    όταν έρθει το backend, να αλλάξουμε απλώς το flag.
+
+   Πλέον το backend υπάρχει, οπότε η ΠΡΟΕΠΙΛΟΓΗ είναι οι πραγματικές
+   κλήσεις. Τα mocks μένουν διαθέσιμα για δουλειά χωρίς server:
+   βάζουμε VITE_USE_MOCK=true στο .env.local (βλ. .env.example).
    ============================================================ */
 import client from './client.js'
 import { getStoredUser } from '../auth/token.js'
@@ -15,7 +19,7 @@ import {
 } from './mock/db.js'
 import { eventsToXml } from './mock/xmlExport.js'
 
-export const USE_MOCK = true
+export const USE_MOCK = import.meta.env.VITE_USE_MOCK === 'true'
 
 /* Μικρή καθυστέρηση ώστε τα mocks να μοιάζουν με πραγματικό δίκτυο. */
 const delay = (ms = 350) => new Promise((res) => setTimeout(res, ms))
@@ -269,6 +273,16 @@ function assertCapacity(payload) {
   }
 }
 
+/* Ο server ταυτοποιεί τους τύπους εισιτηρίων με το όνομα, άρα τα διπλά
+   ονόματα είναι αδύνατο να αντιστοιχιστούν → 400 (ισχύει σε create & update). */
+function assertUniqueTicketNames(payload) {
+  const names = payload.ticketTypes.map((t) => t.name.trim())
+  if (new Set(names).size !== names.length) {
+    throw apiError(400, 'VALIDATION_ERROR', 'Οι τύποι εισιτηρίων πρέπει να έχουν διαφορετικά ονόματα.')
+  }
+  return names
+}
+
 /* Επόμενο id τύπου εισιτηρίου — μοναδικό σε όλες τις εκδηλώσεις. */
 function nextTicketTypeId() {
   const all = mockEvents.flatMap((e) => e.ticketTypes)
@@ -295,6 +309,7 @@ export async function createEvent(payload) {
     await delay()
     const me = requireUser()
     assertCapacity(payload)
+    assertUniqueTicketNames(payload)
 
     let ticketId = nextTicketTypeId()
     const event = {
@@ -330,20 +345,38 @@ export async function updateEvent(id, payload) {
     const event = requireOwnedEvent(id, me)
     assertCapacity(payload)
 
+    // Ο server ταυτοποιεί τους τύπους εισιτηρίων με το ΟΝΟΜΑ — το body του
+    // update δεν στέλνει ids. Ίδιο όνομα → ενημέρωση, όνομα που λείπει →
+    // διαγραφή, νέο όνομα → δημιουργία. Το mock κάνει ακριβώς το ίδιο, ώστε
+    // να μη συμπεριφέρεται διαφορετικά από το πραγματικό API.
+    const names = assertUniqueTicketNames(payload)
+    const existingByName = new Map(event.ticketTypes.map((t) => [t.name, t]))
+    const incomingNames = new Set(names)
+
+    // Τύπος με κρατήσεις δεν διαγράφεται (και μετονομασία = διαγραφή).
+    for (const [name, type] of existingByName) {
+      const reserved = type.quantity - type.available
+      if (!incomingNames.has(name) && reserved > 0) {
+        throw apiError(409, 'SEATS_UNAVAILABLE',
+          `Ο τύπος «${name}» δεν διαγράφεται: υπάρχουν ήδη ${reserved} κρατήσεις.`)
+      }
+    }
+
     let ticketId = nextTicketTypeId()
     const ticketTypes = payload.ticketTypes.map((t) => {
-      const existing = event.ticketTypes.find((x) => x.id === t.id)
+      const name = t.name.trim()
+      const existing = existingByName.get(name)
       const quantity = Number(t.quantity)
       if (!existing) {
-        return { id: ticketId++, name: t.name, price: Number(t.price).toFixed(2), quantity, available: quantity }
+        return { id: ticketId++, name, price: Number(t.price).toFixed(2), quantity, available: quantity }
       }
       // Οι κρατημένες θέσεις αυτού του τύπου δεν μπορούν να «εξαφανιστούν».
       const reserved = existing.quantity - existing.available
       if (quantity < reserved) {
-        throw apiError(409, 'CAPACITY_EXCEEDED',
-          `Ο τύπος «${existing.name}» έχει ήδη ${reserved} κρατήσεις — δεν μπορεί να πέσει κάτω από αυτές.`)
+        throw apiError(409, 'SEATS_UNAVAILABLE',
+          `Ο τύπος «${name}» έχει ήδη ${reserved} κρατήσεις — δεν μπορεί να πέσει κάτω από αυτές.`)
       }
-      return { id: existing.id, name: t.name, price: Number(t.price).toFixed(2), quantity, available: quantity - reserved }
+      return { id: existing.id, name, price: Number(t.price).toFixed(2), quantity, available: quantity - reserved }
     })
 
     Object.assign(event, {
@@ -634,19 +667,9 @@ export async function getMessage(id) {
   return data
 }
 
-export async function deleteMessage(id) {
-  if (USE_MOCK) {
-    await delay()
-    const me = requireUser()
-    const message = mockMessages.find((m) => m.id === Number(id))
-    if (!message) throw apiError(404, 'NOT_FOUND', 'Το μήνυμα δεν βρέθηκε.')
-    if (message.toUser.id !== me.id && message.fromUser.id !== me.id) {
-      throw apiError(403, 'FORBIDDEN', 'Δεν έχετε πρόσβαση σε αυτό το μήνυμα.')
-    }
-    // Στο πραγματικό backend η διαγραφή είναι ανά χρήστη (soft delete),
-    // ώστε να μη χάνεται το μήνυμα από τον άλλον κατάλογο.
-    mockMessages.splice(mockMessages.indexOf(message), 1)
-    return
-  }
-  await client.delete(`/messages/${id}`)
-}
+/* ΔΕΝ υπάρχει deleteMessage().
+   Το `DELETE /messages/{id}` δεν υλοποιείται στο backend: η ίδια γραμμή
+   εξυπηρετεί inbox ΚΑΙ outbox, οπότε σκέτη διαγραφή θα έσβηνε το μήνυμα
+   και από τον άλλον χρήστη. Χρειάζεται deleted_by_sender/deleted_by_receiver
+   και migration 002. Μέχρι να συμφωνηθεί, η σελίδα μηνυμάτων δεν δείχνει
+   κουμπί διαγραφής — καλύτερα καθόλου, παρά κουμπί που γυρίζει 405. */

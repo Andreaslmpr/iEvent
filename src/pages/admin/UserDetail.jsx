@@ -101,13 +101,21 @@ export default function UserDetail() {
           <div><dt>Ημερομηνία εγγραφής</dt><dd>{formatDateTime(user.createdAt)}</dd></div>
           <div>
             <dt>Συντεταγμένες</dt>
-            <dd>{user.geoLocation.lat}, {user.geoLocation.lng}</dd>
+            {/* Το geoLocation είναι null όταν ο χρήστης δεν δήλωσε συντεταγμένες
+                στην εγγραφή — δεν υπάρχει {lat:0,lng:0} να δείξουμε. */}
+            <dd>
+              {user.geoLocation
+                ? `${user.geoLocation.lat}, ${user.geoLocation.lng}`
+                : '— (δεν δηλώθηκαν)'}
+            </dd>
           </div>
         </dl>
 
-        <div style={{ marginTop: 'var(--space-5)' }}>
-          <EventMap geoLocation={user.geoLocation} label={`διεύθυνση ${user.username}`} />
-        </div>
+        {user.geoLocation && (
+          <div style={{ marginTop: 'var(--space-5)' }}>
+            <EventMap geoLocation={user.geoLocation} label={`διεύθυνση ${user.username}`} />
+          </div>
+        )}
       </div>
     </div>
   )

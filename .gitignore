@@ -47,3 +47,8 @@ __screenshots__/
 # System files
 .DS_Store
 Thumbs.db
+
+# Μεταβλητές περιβάλλοντος (το .env.example ανεβαίνει, τα υπόλοιπα όχι)
+.env
+.env.*
+!.env.example

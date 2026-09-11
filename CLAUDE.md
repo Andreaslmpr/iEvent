@@ -37,8 +37,11 @@ src/
 ```
 
 ## Συμβάσεις (σημαντικές για συνέπεια & προφορική)
-- **Mock-first:** όλη η ανάπτυξη γίνεται με `USE_MOCK = true` στο `src/api/index.js`.
-  Όταν έρθει το backend → γυρνάμε σε `false` (οι real κλήσεις υπάρχουν ήδη δίπλα στις mock).
+- **Πλέον μιλάμε στο πραγματικό backend.** Το `USE_MOCK` οδηγείται από το
+  `VITE_USE_MOCK` και είναι **false** χωρίς ρύθμιση. Τα mocks μένουν δίπλα στις
+  real κλήσεις — για δουλειά χωρίς server: `VITE_USE_MOCK=true` στο `.env.local`
+  (βλ. `.env.example`). Τα `/api` requests τα προωθεί ο proxy του Vite στο
+  `https://localhost:8000` (κανένα CORS, κανένα self-signed πρόβλημα).
 - **Ποτέ hardcoded χρώμα/spacing** μέσα σε component CSS — πάντα μέσω των tokens του `theme.css`.
 - **Ποτέ απευθείας axios** σε component — πάντα μέσω `api/index.js`.
 - **Ρόλοι:** `GUEST` (χωρίς login) / `USER` (APPROVED) / `ADMIN`. Το «είμαι διοργανωτής»

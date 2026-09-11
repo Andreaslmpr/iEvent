@@ -21,7 +21,7 @@ const BLANK_TICKET = { name: '', price: '', quantity: '' }
 const EMPTY_FORM = {
   title: '', eventType: '', categories: [], venue: '', address: '',
   city: '', country: 'Greece', lat: '', lng: '', start: '', end: '',
-  capacity: '', description: '', ticketTypes: [{ ...BLANK_TICKET }],
+  capacity: '', description: '', media: [], ticketTypes: [{ ...BLANK_TICKET }],
 }
 
 /* Event DTO → επίπεδες τιμές φόρμας. Το `reserved` ανά τύπο μας
@@ -36,12 +36,17 @@ function toFormValues(event) {
     address: event.address,
     city: event.city,
     country: event.country,
-    lat: String(event.geoLocation.lat),
-    lng: String(event.geoLocation.lng),
+    // Το geoLocation έρχεται null όταν λείπουν συντεταγμένες — ΟΧΙ {lat:0,lng:0}.
+    lat: event.geoLocation ? String(event.geoLocation.lat) : '',
+    lng: event.geoLocation ? String(event.geoLocation.lng) : '',
     start: toInputDateTime(event.startDateTime),
     end: toInputDateTime(event.endDateTime),
     capacity: String(event.capacity),
     description: event.description,
+    // Το PUT αντικαθιστά ΟΛΟΚΛΗΡΟ τον πίνακα media στον server. Δεν έχουμε
+    // ακόμα UI ανεβάσματος (contract §3: TBD), οπότε το κουβαλάμε αυτούσιο —
+    // αλλιώς κάθε επεξεργασία θα έσβηνε τα αρχεία της εκδήλωσης.
+    media: event.media ?? [],
     ticketTypes: event.ticketTypes.map((t) => ({
       id: t.id,
       name: t.name,
@@ -105,6 +110,13 @@ function validate(values, isNew) {
     return ''
   })
   if (ticketErrors.some(Boolean)) errors.ticketTypes = ticketErrors
+
+  // Το backend ταυτοποιεί τους τύπους με το όνομα, οπότε δύο ίδια ονόματα
+  // είναι αδύνατο να αντιστοιχιστούν → 400. Το πιάνουμε εδώ, πριν σταλεί.
+  const names = values.ticketTypes.map((t) => t.name.trim()).filter(Boolean)
+  if (new Set(names).size !== names.length) {
+    errors.ticketNames = 'Κάθε τύπος εισιτηρίου πρέπει να έχει διαφορετικό όνομα.'
+  }
 
   // Invariant του contract: Σ(quantity) ≤ capacity.
   const sum = values.ticketTypes.reduce((total, t) => total + (Number(t.quantity) || 0), 0)
@@ -173,14 +185,15 @@ export default function EventForm({
       startDateTime: fromInputDateTime(values.start),
       endDateTime: fromInputDateTime(values.end),
       capacity: Number(values.capacity),
+      // ΠΡΟΣΟΧΗ: το backend ΔΕΝ διαβάζει το `id` — ταυτοποιεί τους τύπους
+      // εισιτηρίων με το `name` (βλ. κλείδωμα ονόματος παρακάτω).
       ticketTypes: values.ticketTypes.map((t) => ({
-        id: t.id,
         name: t.name.trim(),
         price: Number(t.price).toFixed(2),
         quantity: Number(t.quantity),
       })),
       description: values.description.trim(),
-      media: [],
+      media: values.media,
     })
   }
 
@@ -323,9 +336,17 @@ export default function EventForm({
 
           {values.ticketTypes.map((ticket, index) => (
             <div className="ticket-row" key={ticket.id ?? `new-${index}`}>
+              {/* Ο server ταυτοποιεί τους τύπους με το ΟΝΟΜΑ: μετονομασία =
+                  διαγραφή + δημιουργία. Σε τύπο με κρατήσεις αυτό αποτυγχάνει
+                  με 409, οπότε κλειδώνουμε το πεδίο αντί να αφήσουμε τον
+                  διοργανωτή να διορθώσει ένα τυπογραφικό και να φάει σφάλμα. */}
               <input
                 className="ticket-row__input" aria-label={`Όνομα τύπου ${index + 1}`}
                 value={ticket.name} placeholder="π.χ. Γενική είσοδος"
+                disabled={ticket.reserved > 0}
+                title={ticket.reserved > 0
+                  ? 'Το όνομα δεν αλλάζει: ο τύπος έχει κρατήσεις.'
+                  : undefined}
                 onChange={(e) => updateTicket(index, { name: e.target.value })}
               />
               <input
@@ -366,8 +387,19 @@ export default function EventForm({
             <span>{ticketSum} από {capacity || '—'} θέσεις</span>
           </p>
 
+          {submitted && errors.ticketNames && (
+            <span className="field__message" role="alert">{errors.ticketNames}</span>
+          )}
+
           {submitted && errors.capacitySum && (
             <span className="field__message" role="alert">{errors.capacitySum}</span>
+          )}
+
+          {values.ticketTypes.some((t) => t.reserved > 0) && (
+            <p className="eform__hint">
+              Οι τύποι εισιτηρίων που έχουν ήδη κρατήσεις δεν μετονομάζονται και δεν
+              διαγράφονται — μπορείτε όμως να αλλάξετε τιμή και να αυξήσετε την ποσότητα.
+            </p>
           )}
         </div>
       </section>
