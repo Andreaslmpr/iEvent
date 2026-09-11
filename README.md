@@ -59,3 +59,36 @@ EOF
 cat armodiotites.txt
 
 echo -e "\n\033[0;32m   Το αρχείο 'armodiotites.txt' δημιουργήθηκε με επιτυχία! \033[0m\n"
+
+backend/
+
+├── app/
+
+│   ├── __init__.py
+
+│   ├── main.py            # Η εκκίνηση του API σου
+
+│   ├── database.py        # Σύνδεση με PostgreSQL/MySQL
+
+│   ├── models.py          # Οι SQL πίνακες σε μορφή ORM (SQLAlchemy)
+
+│   ├── schemas.py         # Validation των JSON δεδομένων (Pydantic)
+
+│   ├── auth.py            # Δημιουργία και έλεγχος JWT Tokens
+
+│   ├── routes/            # Διαχωρισμός των Endpoints
+
+│   │   ├── auth.py
+
+│   │   ├── events.py
+
+│   │   └── bookings.py
+
+│   └── recommendation.py  # Ο Αλγόριθμος (Bonus)
+
+├── dataset/               # Εδώ θα βάλεις το αρχείο για το Matrix Factorization
+
+├── requirements.txt       # Οι βιβλιοθήκες σου (fastapi, uvicorn, sqlalchemy, numpy, pandas)
+
+└── README.md 
+

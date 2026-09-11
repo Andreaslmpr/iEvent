@@ -1,22 +1,60 @@
-# See https://docs.github.com/get-started/getting-started-with-git/ignoring-files for more about ignoring files.
+# ============================================================
+# StayApp — κοινό .gitignore (frontend + backend)
+# Προέκυψε από τη συγχώνευση των δύο branches: το πάνω μισό
+# αφορά το React, το κάτω το FastAPI/βάση.
+# ============================================================
 
-# Compiled output
+# ---------- Κοινά ----------
+*.log
+
+# Μεταβλητές περιβάλλοντος — ΠΟΤΕ στο git.
+# Εξαίρεση: το .env.example, που είναι τεκμηρίωση χωρίς μυστικά.
+.env
+.env.*
+!.env.example
+
+# Πιστοποιητικά SSL — ΠΟΤΕ στο git (το key.pem είναι ιδιωτικό κλειδί)
+certs/
+*.pem
+
+# ---------- Frontend (React / Vite / Node) ----------
 /dist
 /tmp
 /out-tsc
 /bazel-out
-
-# Node
 /node_modules
 npm-debug.log
 yarn-error.log
-*.log
 
-# Recommendation dataset — πολύ μεγάλα αρχεία για το git (>100MB).
+# Dataset συστάσεων — πολύ μεγάλα αρχεία για το git (>100MB).
 # Μοιράζεται ξεχωριστά (e-class). ΔΕΝ ανεβαίνει στο repo.
 /rel_event_csvs
 
-# IDEs and editors
+# ---------- Backend (Python / FastAPI) ----------
+# Εικονικό περιβάλλον (SOS)
+venv/
+env/
+.venv/
+
+# Compiled bytecode
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+get-pip.py
+
+# Τοπικές βάσεις
+*.sqlite3
+
+# ---------- Editors / IDEs ----------
+# Κρατάμε κοινή τη ρύθμιση του project, αγνοούμε τα προσωπικά.
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+!.vscode/mcp.json
+.history/*
 .idea/
 .project
 .classpath
@@ -25,16 +63,7 @@ yarn-error.log
 .settings/
 *.sublime-workspace
 
-# Visual Studio Code
-.vscode/*
-!.vscode/settings.json
-!.vscode/tasks.json
-!.vscode/launch.json
-!.vscode/extensions.json
-!.vscode/mcp.json
-.history/*
-
-# Miscellaneous
+# ---------- Λοιπά ----------
 /.angular/cache
 .sass-cache/
 /connect.lock
@@ -44,11 +73,6 @@ testem.log
 /typings
 __screenshots__/
 
-# System files
+# ---------- Αρχεία συστήματος ----------
 .DS_Store
 Thumbs.db
-
-# Μεταβλητές περιβάλλοντος (το .env.example ανεβαίνει, τα υπόλοιπα όχι)
-.env
-.env.*
-!.env.example
