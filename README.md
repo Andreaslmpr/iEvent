@@ -1,94 +1,209 @@
 # StayApp
-#!/bin/bash
-================================================================================
-          ΠΛΑΝΟ ΚΑΤΑΝΟΜΗΣ ΑΡΜΟΔΙΟΤΗΤΩΝ - ΕΡΓΑΣΙΑ ΤΕΔ 2026
-================================================================================
 
---------------------------------------------------------------------------------
-🐍 ΑΝΔΡΕΑΣ: BACKEND, ΒΑΣΗ ΔΕΔΟΜΕΝΩΝ & ΑΛΓΟΡΙΘΜΟΣ (PYTHON 3.12)
---------------------------------------------------------------------------------
-1. Σχεδιασμός & Υλοποίηση Σχεσιακής Βάσης Δεδομένων (RDBMS):
-   * Πίνακας Χρηστών: Στοιχεία, ΑΦΜ, τοποθεσία και status (PENDING/APPROVED).
-   * Πίνακας Εκδηλώσεων: Μεταφορά όλης της δομής του XML/DTD σε SQL.
-   * Πίνακας Τύπων Εισιτηρίων: Σύνδεση (One-to-Many) με τις εκδηλώσεις.
-   * Πίνακας Κρατήσεων: Σύνδεση χρηστών-εκδηλώσεων και BookingStatus.
-   * Πίνακας Μηνυμάτων: Αποθήκευση ID αποστολέα/παραλήπτη και read/unread status.
+Εφαρμογή διαχείρισης εκδηλώσεων και ηλεκτρονικών κρατήσεων εισιτηρίων στον
+Παγκόσμιο Ιστό.
 
-2. Ανάπτυξη των REST API Endpoints (Python):
-   * /api/auth/register: Έλεγχος μοναδικότητας username, εγγραφή ως PENDING.
-   * /api/auth/login: Ταυτοποίηση μέσω SSL/TLS και έκδοση JSON Web Token (JWT).
-   * /api/admin: Λίστα χρηστών, έγκριση/απόρριψη, export σε XML/JSON.
-   * /api/events: CRUD, φίλτρα, σελιδοποίηση, έλεγχος χωρητικότητας εισιτηρίων.
-   * /api/bookings: Έλεγχος διαθεσιμότητας θέσεων (πρόληψη overbooking).
-   * /api/messages: Διαχείριση chat και αυτόματο mail/μήνυμα σε ακύρωση event.
+**Υποχρεωτική εργασία — Τεχνολογίες Εφαρμογών Διαδικτύου, ΣΤ΄ εξάμηνο 2026**
+Τμήμα Πληροφορικής & Τηλεπικοινωνιών · Διδάσκων: Δρ. Γ. Χαμόδρακας
 
-3. Υλοποίηση του Αλγορίθμου Συστάσεων (The Bonus):
-   * Custom κώδικας Biased Matrix Factorization (NumPy/Pandas) χωρίς ML βιβλιοθήκες.
-   * Διαχείριση Cold Start (βασισμένο μόνο σε επισκέψεις αν δεν υπάρχουν κρατήσεις).
-   * Endpoint: GET /api/recommendations.
+---
 
---------------------------------------------------------------------------------
-⚛️ ΓΙΩΡΓΟΣ: FRONTEND, UI/UX & API INTEGRATION (REACT)
---------------------------------------------------------------------------------
-1. Σχεδιασμός Διεπαφών & Components (React):
-   * Σελίδες Εισόδου/Εγγραφής: Welcome, Login, Register (με validations), Pending Page.
-   * Admin Panel: Πίνακας διαχείρισης χρηστών (Έγκριση/Απόρριψη), κουμπί Export.
-   * Dashboard Διοργανωτή: Φόρμα event (δυναμικά εισιτήρια, photos), λίστα κρατήσεων.
-   * Αναζήτηση & Πλοήγηση: Φίλτρα (τιμή, πόλη κ.λπ.) και σελιδοποιημένοι πίνακες.
-   * Σελίδα Event: OpenStreetMap integration (χάρτης) και Confirmation Modal κράτησης.
-   * Messaging UI: Inbox/Outbox, διαγραφή, και Badge νέων μηνυμάτων στο μενού.
+## Τι κάνει
 
-2. API Integration & Ροές Δεδομένων (React):
-   * Διαχείριση JWT: Αποθήκευση στο localStorage και αυτόματη αποστολή στα Headers.
-   * Protected Routes: Περιορισμός σελίδων ανάλογα με τον ρόλο (π.χ. Επισκέπτης).
-   * Error Handling: Εμφάνιση κατάλληλων μηνυμάτων (π.χ. "Εξαντλήθηκαν οι θέσεις").
-   * Bonus Widget: Section "Προτεινόμενα για εσάς" που καλεί το API του Ανδρέα.
+Κάθε εγγεγραμμένος χρήστης είναι ταυτόχρονα **διοργανωτής** στις εκδηλώσεις που
+δημιουργεί και **συμμετέχων** σε όσες κρατά θέση. Ο **επισκέπτης** πλοηγείται και
+αναζητά χωρίς να μπορεί να κρατήσει. Ο **διαχειριστής** εγκρίνει τις αιτήσεις
+εγγραφής και εξάγει τα δεδομένα.
 
---------------------------------------------------------------------------------
-🤝 ΠΡΩΤΟΚΟΛΛΟ ΣΥΝΕΡΓΑΣΙΑΣ (INTEGRATION)
---------------------------------------------------------------------------------
-1. API Contracts: Συμφωνία της δομής των JSON πριν γραφτεί κώδικας.
-2. Δομή Φακέλων: Ξεχωριστοί φάκελοι /backend και /frontend στο κοινό GitHub Repo.
-3. CORS: Ενεργοποίηση στο Backend για να δέχεται requests από το port του React.
-4. Κοινό Feature: Στενή συνεργασία στο Messaging (Chat) για Full Stack κατανόηση.
+- Εγγραφή με έγκριση διαχειριστή · JWT · όλες οι κλήσεις πάνω από TLS
+- Δημιουργία εκδηλώσεων με τύπους εισιτηρίων και έλεγχο χωρητικότητας
+- Αναζήτηση με 7 κριτήρια, σελιδοποίηση παντού
+- Κρατήσεις με προστασία από υπερκράτηση (`SELECT … FOR UPDATE`)
+- Χάρτης OpenStreetMap στη σελίδα εκδήλωσης
+- Μηνύματα διοργανωτή ↔ συμμετέχοντα, με μαζική ειδοποίηση σε ακύρωση
+- Εξαγωγή σε XML κατά το DTD της εκφώνησης και σε JSON
+- **Συστάσεις με Biased Matrix Factorization γραμμένο εκ του μηδενός**
 
-================================================================================
-EOF
+---
 
-# Εμφάνιση του περιεχομένου στην οθόνη
-cat armodiotites.txt
+## Στοίβα
 
-echo -e "\n\033[0;32m   Το αρχείο 'armodiotites.txt' δημιουργήθηκε με επιτυχία! \033[0m\n"
+| Επίπεδο | Τεχνολογία |
+|---|---|
+| Μετωπιαίο άκρο | React 18 · Vite 6 · React Router 6 · axios · καθαρό CSS |
+| Νωτιαίο άκρο | FastAPI · Pydantic v2 · SQLAlchemy 2 · Uvicorn |
+| Βάση | MySQL 8 (utf8mb4) |
+| Ασφάλεια | TLS · PyJWT · bcrypt |
+| Συστάσεις | NumPy · pandas (χωρίς βιβλιοθήκες μηχανικής μάθησης) |
 
-backend/
+---
 
-├── app/
+## Γρήγορη εκκίνηση
 
-│   ├── __init__.py
+### Προαπαιτούμενα
 
-│   ├── main.py            # Η εκκίνηση του API σου
+Python 3.11+ · Node.js 18+ · MySQL 8 · OpenSSL
 
-│   ├── database.py        # Σύνδεση με PostgreSQL/MySQL
+### 1. Βάση δεδομένων
 
-│   ├── models.py          # Οι SQL πίνακες σε μορφή ORM (SQLAlchemy)
+```bash
+mysql -u root -p -e "CREATE DATABASE staywebapp \
+  CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci"
 
-│   ├── schemas.py         # Validation των JSON δεδομένων (Pydantic)
+# Σχήμα — με αυτή τη σειρά (υπάρχουν εξαρτήσεις ξένων κλειδιών)
+for t in users events event_categories ticket_types bookings \
+         messages event_media event_visits routines; do
+  mysql -u root -p staywebapp < db/staywebapp_$t.sql
+done
 
-│   ├── auth.py            # Δημιουργία και έλεγχος JWT Tokens
+# Μεταναστεύσεις — ΑΠΑΡΑΙΤΗΤΕΣ, με τη σειρά
+mysql -u root -p staywebapp < db/migrations/001_event_categories_many_to_many.sql
+mysql -u root -p staywebapp < db/migrations/002_messages_soft_delete.sql
+```
 
-│   ├── routes/            # Διαχωρισμός των Endpoints
+### 2. Νωτιαίο άκρο
 
-│   │   ├── auth.py
+```bash
+python -m venv .venv
+.venv/bin/pip install -r requirements.txt     # Windows: .venv/Scripts/pip
+```
 
-│   │   ├── events.py
+Δημιούργησε αρχείο `.env` στη ρίζα (δεν ανεβαίνει στο git):
 
-│   │   └── bookings.py
+```ini
+DATABASE_URL=mysql+pymysql://root:<κωδικός>@127.0.0.1:3306/staywebapp?charset=utf8mb4
+JWT_SECRET_KEY=<τυχαία μακριά συμβολοσειρά>
+JWT_ALGORITHM=HS256
+ACCESS_TOKEN_EXPIRE_MINUTES=60
+ADMIN_USERNAME=admin
+ADMIN_PASSWORD=<κωδικός διαχειριστή>
+```
 
-│   └── recommendation.py  # Ο Αλγόριθμος (Bonus)
+```bash
+bash make-certs.sh    # αυτο-υπογεγραμμένο πιστοποιητικό — μία φορά
+bash run.sh           # https://localhost:8000
+```
 
-├── dataset/               # Εδώ θα βάλεις το αρχείο για το Matrix Factorization
+Ο χρήστης-διαχειριστής δημιουργείται **αυτόματα** στην πρώτη εκκίνηση, από τα
+`ADMIN_USERNAME` / `ADMIN_PASSWORD`. Διαδραστική τεκμηρίωση του API:
+`https://localhost:8000/docs`.
 
-├── requirements.txt       # Οι βιβλιοθήκες σου (fastapi, uvicorn, sqlalchemy, numpy, pandas)
+### 3. Μετωπιαίο άκρο
 
-└── README.md 
+```bash
+npm install
+npm run dev           # https://localhost:5173
+```
 
+> Το πιστοποιητικό είναι αυτο-υπογεγραμμένο, οπότε ο browser ζητά ρητή αποδοχή
+> την πρώτη φορά. Οι κλήσεις προς `/api` προωθούνται εσωτερικά στο νωτιαίο άκρο,
+> οπότε αρκεί **μία** αποδοχή — για το `:5173`.
+
+---
+
+## Δομή του έργου
+
+```
+├── main.py                 Εκκίνηση FastAPI, CORS, exception handlers
+├── database.py             Σύνδεση & session
+├── models.py               SQLAlchemy ORM — 9 πίνακες
+├── schemas.py              Pydantic DTOs (είσοδος + έξοδος)
+├── security.py             JWT, bcrypt, dependencies ρόλων
+├── routers/                27 endpoints σε 6 ενότητες
+│   ├── auth.py             εγγραφή · είσοδος
+│   ├── admin.py            χρήστες · έγκριση/απόρριψη · export XML/JSON
+│   ├── events.py           CRUD · αναζήτηση · publish/cancel · κρατήσεις
+│   ├── bookings.py         δημιουργία κράτησης · οι κρατήσεις μου
+│   ├── messages.py         inbox/outbox · unread-count · διαγραφή
+│   └── recommendations.py  GET /api/recommendations
+├── services/
+│   └── recommender.py      Biased Matrix Factorization (SGD, εκ του μηδενός)
+│
+├── db/
+│   ├── events.dtd          Το DTD της εκφώνησης
+│   ├── staywebapp_*.sql    Σχήμα βάσης
+│   └── migrations/         001 κατηγορίες N:M · 002 soft delete μηνυμάτων
+│
+├── src/                    Μετωπιαίο άκρο (React)
+│   ├── api/                facade — ΜΟΝΟ από εδώ γίνονται κλήσεις
+│   │   ├── client.js       axios instance + JWT interceptor
+│   │   └── mock/           εικονικά δεδομένα ανάπτυξης
+│   ├── auth/token.js       αποθήκευση JWT (μοναδικό σημείο)
+│   ├── context/            AuthContext
+│   ├── routes/             ProtectedRoute (περιορισμός ανά ρόλο)
+│   ├── components/         events/ · ui/ · form/ · layout/
+│   ├── pages/              μία σελίδα ανά διαδρομή
+│   ├── hooks/              useForm · useUnreadCount (polling ~30s)
+│   ├── utils/              μορφοποίηση · επικύρωση · λήψη αρχείων
+│   └── styles/             theme.css (design tokens) · components · global
+│
+├── docs/report.html        Τεχνική αναφορά → Ctrl+P → «Αποθήκευση ως PDF»
+├── API_CONTRACT.md         Το συμβόλαιο backend ↔ frontend (v1.1)
+└── CLAUDE.md               Συμβάσεις ανάπτυξης & εκκρεμότητες
+```
+
+---
+
+## Τεκμηρίωση
+
+| Αρχείο | Περιεχόμενο |
+|---|---|
+| **`API_CONTRACT.md`** | Η μοναδική πηγή αλήθειας για endpoints, DTOs και κωδικούς σφάλματος. Γράφτηκε **πριν** τον κώδικα· κάθε αλλαγή καταγράφεται στο changelog. |
+| **`docs/report.html`** | Η τεχνική αναφορά της παράδοσης: αρχιτεκτονική, σχεδίαση βάσης, αλγόριθμος, παραδοχές, δυσκολίες. |
+| **`CLAUDE.md`** | Συμβάσεις κώδικα και εκκρεμότητες. |
+| `https://localhost:8000/docs` | Διαδραστική τεκμηρίωση με όλα τα schemas. |
+
+---
+
+## Ανάπτυξη χωρίς νωτιαίο άκρο
+
+Το μετωπιαίο άκρο αναπτύχθηκε **mock-first**: κάθε συνάρτηση του API facade έχει
+δύο διαδρομές, μία με εικονικά δεδομένα και μία με πραγματικές κλήσεις. Για να
+δουλέψεις χωρίς server, φτιάξε `.env.local`:
+
+```ini
+VITE_USE_MOCK=true
+```
+
+Χρήστες δοκιμών σε αυτή την κατάσταση (`src/api/mock/db.js`):
+
+| username | password | ρόλος |
+|---|---|---|
+| `admin` | `admin123` | ADMIN |
+| `maria21` | `maria123` | USER · APPROVED |
+| `org_athens_events` | `nikos123` | USER · διοργανωτής |
+| `giannis_p` | `giannis123` | USER · APPROVED |
+| `pending_user` | `elena123` | USER · PENDING |
+
+> Χωρίς τη μεταβλητή, η προεπιλογή είναι το **πραγματικό API**. Στην τελική
+> δέσμη τα εικονικά δεδομένα αφαιρούνται εντελώς.
+
+---
+
+## Σημειώσεις πλατφόρμας
+
+Τα σενάρια εκκίνησης δουλεύουν σε Linux, macOS και Windows (Git Bash). Τρία
+σημεία χρειάστηκαν ιδιαίτερο χειρισμό για τα Windows:
+
+- Το εικονικό περιβάλλον τοποθετεί τα εκτελέσιμα σε `Scripts/` αντί για `bin/` —
+  το `run.sh` ανιχνεύει ποιο υπάρχει.
+- Η κονσόλα χρησιμοποιεί κωδικοποίηση cp1252 και έριχνε τον server στο πρώτο
+  ελληνικό μήνυμα· το `run.sh` ορίζει ρητά `PYTHONIOENCODING=utf-8`.
+- Το Git Bash μετέτρεπε το όρισμα `-subj "/C=GR/…"` του OpenSSL σε διαδρομή
+  αρχείου· το `make-certs.sh` ορίζει `MSYS_NO_PATHCONV=1`.
+
+> **Προσοχή:** το `run.sh` τρέχει με `--reload`, που παρακολουθεί ολόκληρο τον
+> φάκελο μαζί με το `.venv`. Μετά από `pip install` χρειάζεται χειροκίνητη
+> επανεκκίνηση.
+
+---
+
+## Ομάδα
+
+| Μέλος | Αρμοδιότητα |
+|---|---|
+| **Γεώργιος Πατσάκας** | Μετωπιαίο άκρο (React), διεπαφή χρήστη, κατανάλωση του REST API, σύνταξη του συμβολαίου |
+| **Ανδρέας** | Νωτιαίο άκρο (FastAPI), σχεσιακή βάση & ORM, αλγόριθμος συστάσεων, εξαγωγή XML/JSON |
+
+Η ανάπτυξη έγινε παράλληλα και στα δύο άκρα, με το `API_CONTRACT.md` ως
+συμφωνημένο σημείο συνάντησης.
