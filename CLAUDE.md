@@ -16,7 +16,9 @@
 ## Εντολές
 ```bash
 npm install      # εγκατάσταση
-npm run dev      # dev server → http://localhost:5173
+npm run dev      # dev server → https://localhost:5173 (SSL, εκφώνηση §1)
+                 # Χρειάζεται `bash make-certs.sh` μία φορά· αλλιώς πέφτει σε HTTP.
+                 # Την πρώτη φορά ο browser ζητά αποδοχή του self-signed.
 npm run build    # production build (έλεγχος ότι compiles)
 npm run preview  # preview του build
 ```
@@ -68,12 +70,11 @@ src/
 6. Σκλήρυνση (security/simplify/polish)
 
 ## Εκκρεμότητες προς παράδοση (από την εκφώνηση)
-- **Διαγραφή μηνυμάτων** (§10): απαίτηση, όχι επιλογή. Λείπει το
-  `DELETE /messages/{id}` από το backend — θέλει migration 002
-  (`deleted_by_sender` / `deleted_by_receiver`) και επαναφορά του κουμπιού.
 - **PDF αναφοράς** (§Λοιπές 3): εξώφυλλο+ΑΜ, περιεχόμενα, εισαγωγή,
   σχεδιαστικές αποφάσεις & παραδοχές, οδηγίες εγκατάστασης, επίλογος.
-- **HTTPS και στο frontend** (§1: «όλες οι αλληλεπιδράσεις»).
+- **Media upload** (§7): σήμερα το `media` είναι απλός πίνακας filenames
+  χωρίς UI ανεβάσματος. Το DTD το έχει `Media?` (προαιρετικό), οπότε στέκει —
+  θέλει όμως ρητή απόφαση και καταγραφή στο PDF ως παραδοχή.
 - **Mock δεδομένα**: τα `startDateTime` στο `mock/db.js` είναι Ιουνίου–
   Ιουλίου 2026 και έχουν ήδη περάσει. Σε mock mode οι προτάσεις (που
   φιλτράρουν μελλοντικές εκδηλώσεις) δείχνουν ελάχιστα.
