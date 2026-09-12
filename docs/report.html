@@ -1,0 +1,1179 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+<meta charset="utf-8">
+<title>StayApp — Τεχνική Αναφορά</title>
+<style>
+/* ============================================================
+   Τεχνική αναφορά — στυλ για εκτύπωση σε PDF (A4).
+   Άνοιγμα στον browser → Ctrl+P → «Αποθήκευση ως PDF».
+   Στις επιλογές εκτύπωσης: Μέγεθος A4, Περιθώρια «Προεπιλογή»,
+   και ενεργό το «Γραφικά φόντου» για να βγουν οι πίνακες σωστά.
+   ============================================================ */
+
+@page { size: A4; margin: 20mm 18mm; }
+
+:root {
+  --ink: #1a1a2e;
+  --ink-soft: #4a4a5c;
+  --ink-faint: #7a7a8a;
+  --rule: #d8d5ce;
+  --accent: #2b3a67;
+  --accent-warm: #b8432f;
+  --surface: #f7f6f3;
+  --code-bg: #f4f3ef;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  font-family: 'Palatino Linotype', 'Book Antiqua', Palatino, Georgia, serif;
+  font-size: 11.5pt;
+  line-height: 1.6;
+  color: var(--ink);
+  max-width: 175mm;
+  margin: 0 auto;
+  padding: 12mm 0;
+  hyphens: auto;
+}
+
+/* ---------- Εξώφυλλο ---------- */
+.cover {
+  height: 245mm;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  text-align: center;
+  page-break-after: always;
+}
+.cover__dept {
+  font-size: 11pt;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  margin-bottom: 3mm;
+}
+.cover__course { font-size: 13pt; color: var(--ink-soft); margin-bottom: 22mm; }
+.cover__title {
+  font-size: 30pt;
+  line-height: 1.2;
+  margin: 0 0 4mm;
+  color: var(--accent);
+  font-weight: normal;
+}
+.cover__subtitle {
+  font-size: 14pt;
+  color: var(--ink-soft);
+  font-style: italic;
+  margin-bottom: 24mm;
+}
+.cover__rule { width: 45mm; height: 2px; background: var(--accent-warm); margin: 0 auto 24mm; }
+.cover__team { font-size: 12.5pt; line-height: 2; }
+.cover__team strong { font-weight: normal; color: var(--accent); }
+.cover__meta { margin-top: 24mm; font-size: 10.5pt; color: var(--ink-faint); }
+
+/* Θέσεις που πρέπει να συμπληρωθούν πριν την παράδοση. */
+.fill {
+  background: #fff3cd;
+  border-bottom: 1.5px dashed #b8860b;
+  padding: 0 3px;
+  color: #7a5c00;
+  font-style: normal;
+}
+
+/* ---------- Πίνακας περιεχομένων ---------- */
+.toc { page-break-after: always; }
+.toc h2 { border: none; margin-bottom: 8mm; }
+.toc ol { list-style: none; padding: 0; counter-reset: toc; }
+.toc > ol > li {
+  counter-increment: toc;
+  margin-bottom: 2.5mm;
+  font-size: 12pt;
+}
+.toc > ol > li::before {
+  content: counter(toc) ".";
+  display: inline-block;
+  width: 9mm;
+  color: var(--accent-warm);
+}
+.toc ul { list-style: none; padding-left: 9mm; margin: 1mm 0 0; }
+.toc ul li { font-size: 10.5pt; color: var(--ink-soft); margin-bottom: 0.8mm; }
+.toc a { color: inherit; text-decoration: none; }
+
+/* ---------- Επικεφαλίδες ---------- */
+h1 {
+  font-size: 19pt;
+  color: var(--accent);
+  font-weight: normal;
+  margin: 0 0 6mm;
+  padding-bottom: 3mm;
+  border-bottom: 2px solid var(--accent);
+  page-break-after: avoid;
+}
+h2 {
+  font-size: 14pt;
+  color: var(--accent);
+  font-weight: normal;
+  margin: 9mm 0 3mm;
+  padding-bottom: 1.5mm;
+  border-bottom: 1px solid var(--rule);
+  page-break-after: avoid;
+}
+h3 {
+  font-size: 12pt;
+  color: var(--ink);
+  margin: 6mm 0 2mm;
+  font-weight: bold;
+  page-break-after: avoid;
+}
+section.chapter { page-break-before: always; }
+
+p { margin: 0 0 3.5mm; text-align: justify; }
+
+/* ---------- Πίνακες ---------- */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 4mm 0 5mm;
+  font-size: 10pt;
+  page-break-inside: avoid;
+}
+th {
+  background: var(--surface);
+  text-align: left;
+  padding: 2mm 2.5mm;
+  border-bottom: 1.5px solid var(--accent);
+  font-weight: bold;
+  font-size: 9.5pt;
+}
+td { padding: 2mm 2.5mm; border-bottom: 1px solid var(--rule); vertical-align: top; }
+tr:last-child td { border-bottom: none; }
+
+/* ---------- Κώδικας ---------- */
+code {
+  font-family: 'Consolas', 'DejaVu Sans Mono', monospace;
+  font-size: 9.5pt;
+  background: var(--code-bg);
+  padding: 0.5mm 1.2mm;
+  border-radius: 2px;
+}
+pre {
+  background: var(--code-bg);
+  border-left: 3px solid var(--accent);
+  padding: 3mm 4mm;
+  margin: 3mm 0 5mm;
+  font-family: 'Consolas', 'DejaVu Sans Mono', monospace;
+  font-size: 9pt;
+  line-height: 1.45;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  page-break-inside: avoid;
+}
+pre code { background: none; padding: 0; font-size: inherit; }
+
+/* ---------- Σημειώσεις ---------- */
+.note {
+  background: var(--surface);
+  border-left: 3px solid var(--accent-warm);
+  padding: 3mm 4mm;
+  margin: 4mm 0;
+  font-size: 10.5pt;
+  page-break-inside: avoid;
+}
+.note__label {
+  display: block;
+  font-size: 9pt;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--accent-warm);
+  margin-bottom: 1.5mm;
+}
+.note p:last-child { margin-bottom: 0; }
+
+ul, ol { margin: 0 0 4mm; padding-left: 6mm; }
+li { margin-bottom: 1.5mm; }
+
+.formula {
+  text-align: center;
+  font-size: 12pt;
+  margin: 4mm 0;
+  font-style: italic;
+}
+
+figure { margin: 4mm 0 5mm; page-break-inside: avoid; }
+figcaption {
+  font-size: 9.5pt;
+  color: var(--ink-faint);
+  text-align: center;
+  margin-top: 2mm;
+}
+
+.ascii {
+  font-family: 'Consolas', 'DejaVu Sans Mono', monospace;
+  font-size: 8.5pt;
+  line-height: 1.35;
+  background: var(--code-bg);
+  padding: 4mm;
+  white-space: pre;
+  overflow-x: auto;
+}
+
+@media screen {
+  body { background: #fff; padding: 20mm; }
+  .screen-hint {
+    position: fixed; top: 0; left: 0; right: 0;
+    background: var(--accent); color: #fff;
+    padding: 8px 16px; font-size: 13px; text-align: center;
+    font-family: system-ui, sans-serif; z-index: 99;
+  }
+  .cover { padding-top: 40px; }
+}
+@media print { .screen-hint { display: none; } }
+</style>
+</head>
+<body>
+
+<div class="screen-hint">
+  Για εξαγωγή σε PDF: <strong>Ctrl+P</strong> → Προορισμός «Αποθήκευση ως PDF» → Μέγεθος <strong>A4</strong> → ενεργοποίησε τα <strong>«Γραφικά φόντου»</strong>.
+  Συμπλήρωσε πρώτα τα <span style="background:#fff3cd;color:#7a5c00;padding:0 4px;">κίτρινα πεδία</span> στο εξώφυλλο.
+</div>
+
+<!-- ============================ ΕΞΩΦΥΛΛΟ ============================ -->
+<div class="cover">
+  <div class="cover__dept">Τμήμα Πληροφορικής &amp; Τηλεπικοινωνιών</div>
+  <div class="cover__course">Τεχνολογίες Εφαρμογών Διαδικτύου — ΣΤ΄ Εξάμηνο, 2026</div>
+
+  <h1 class="cover__title" style="border:none;padding:0;">StayApp</h1>
+  <div class="cover__subtitle">Εφαρμογή Διαχείρισης Εκδηλώσεων<br>και Ηλεκτρονικών Κρατήσεων στον Παγκόσμιο Ιστό</div>
+
+  <div class="cover__rule"></div>
+
+  <div class="cover__team">
+    <strong>Γεώργιος Πατσάκας</strong> — ΑΜ <span class="fill">συμπλήρωσε ΑΜ</span><br>
+    <strong><span class="fill">Ονοματεπώνυμο Ανδρέα</span></strong> — ΑΜ <span class="fill">συμπλήρωσε ΑΜ</span>
+  </div>
+
+  <div class="cover__meta">
+    Διδάσκων: Δρ. Γ. Χαμόδρακας<br>
+    Σεπτέμβριος 2026
+  </div>
+</div>
+
+<!-- ======================= ΠΙΝΑΚΑΣ ΠΕΡΙΕΧΟΜΕΝΩΝ ======================= -->
+<div class="toc">
+  <h2 style="font-size:17pt;">Πίνακας Περιεχομένων</h2>
+  <ol>
+    <li><a href="#ch1">Εισαγωγή</a>
+      <ul><li>Στόχος της εργασίας · Κατανομή αρμοδιοτήτων · Δομή του εγγράφου</li></ul>
+    </li>
+    <li><a href="#ch2">Αρχιτεκτονική του συστήματος</a>
+      <ul><li>Επισκόπηση · Τεχνολογίες · Ροή ενός αιτήματος</li></ul>
+    </li>
+    <li><a href="#ch3">Σχεδίαση της βάσης δεδομένων</a>
+      <ul><li>Οντότητες και σχέσεις · Από το DTD στο σχεσιακό μοντέλο · Οι δύο μεταναστεύσεις</li></ul>
+    </li>
+    <li><a href="#ch4">Το REST API ως συμβόλαιο</a>
+      <ul><li>Γιατί γράφτηκε πρώτο · Εγκάρσιες συμβάσεις · Κατάλογος endpoints</li></ul>
+    </li>
+    <li><a href="#ch5">Ασφάλεια και εξουσιοδότηση</a>
+      <ul><li>SSL/TLS · JWT · Ρόλοι ανά ενέργεια · Ταυτόχρονη πρόσβαση</li></ul>
+    </li>
+    <li><a href="#ch6">Το μετωπιαίο άκρο (React)</a>
+      <ul><li>Οργάνωση · Ανάπτυξη mock-first · Σύστημα σχεδίασης</li></ul>
+    </li>
+    <li><a href="#ch7">Ο αλγόριθμος συστάσεων</a>
+      <ul><li>Biased Matrix Factorization · Implicit feedback · Cold start</li></ul>
+    </li>
+    <li><a href="#ch8">Εξαγωγή δεδομένων σε XML και JSON</a></li>
+    <li><a href="#ch9">Εγκατάσταση και εκτέλεση</a></li>
+    <li><a href="#ch10">Σχεδιαστικές αποφάσεις και παραδοχές</a></li>
+    <li><a href="#ch11">Επίλογος — δυσκολίες και πώς αντιμετωπίστηκαν</a></li>
+  </ol>
+</div>
+
+<!-- ============================ 1. ΕΙΣΑΓΩΓΗ ============================ -->
+<section class="chapter" id="ch1">
+<h1>1. Εισαγωγή</h1>
+
+<h2>1.1 Στόχος της εργασίας</h2>
+<p>
+Η <em>StayApp</em> είναι εφαρμογή διαχείρισης εκδηλώσεων και ηλεκτρονικών κρατήσεων
+εισιτηρίων, υλοποιημένη κατά την αρχιτεκτονική web browser / web server. Κάθε
+εγγεγραμμένος χρήστης λειτουργεί ταυτόχρονα ως <strong>διοργανωτής</strong> στις
+εκδηλώσεις που δημιουργεί και ως <strong>συμμετέχων</strong> σε όσες κρατά θέση,
+ενώ ο μη συνδεδεμένος <strong>επισκέπτης</strong> μπορεί μόνο να πλοηγηθεί και να
+αναζητήσει. Ο <strong>διαχειριστής</strong> εγκρίνει ή απορρίπτει τις αιτήσεις
+εγγραφής και εξάγει τα δεδομένα των εκδηλώσεων.
+</p>
+<p>
+Πέρα από τις λειτουργικές απαιτήσεις, η εργασία υλοποιεί σύστημα συστάσεων με
+αλγόριθμο <strong>Biased Matrix Factorization γραμμένο εκ του μηδενός</strong>,
+χωρίς χρήση έτοιμων βιβλιοθηκών μηχανικής μάθησης.
+</p>
+
+<h2>1.2 Κατανομή αρμοδιοτήτων</h2>
+<p>
+Η ομάδα εργάστηκε σε δύο ανεξάρτητα άκρα που συναντήθηκαν σε ένα ρητό συμβόλαιο
+διεπαφής. Το μοντέλο αυτό επέτρεψε να προχωρούν και τα δύο μέρη παράλληλα, χωρίς
+το ένα να περιμένει το άλλο.
+</p>
+<table>
+  <tr><th style="width:32%">Μέλος</th><th>Αρμοδιότητα</th></tr>
+  <tr>
+    <td><strong>Γεώργιος Πατσάκας</strong></td>
+    <td>Μετωπιαίο άκρο (React), σχεδίαση διεπαφής, κατανάλωση του REST API,
+        σύνταξη του αρχικού συμβολαίου <code>API_CONTRACT.md</code>.</td>
+  </tr>
+  <tr>
+    <td><strong><span class="fill">Ονοματεπώνυμο Ανδρέα</span></strong></td>
+    <td>Νωτιαίο άκρο (Python / FastAPI), σχεσιακή βάση δεδομένων και ORM,
+        αλγόριθμος συστάσεων, εξαγωγή XML/JSON.</td>
+  </tr>
+</table>
+
+<h2>1.3 Δομή του εγγράφου</h2>
+<p>
+Το <strong>Κεφάλαιο 2</strong> περιγράφει τη συνολική αρχιτεκτονική και τις
+τεχνολογίες. Το <strong>Κεφάλαιο 3</strong> αναλύει τη σχεδίαση της βάσης
+δεδομένων και τον τρόπο που το DTD της εκφώνησης μεταφράστηκε σε σχεσιακό
+μοντέλο. Το <strong>Κεφάλαιο 4</strong> παρουσιάζει το REST API ως συμβόλαιο
+μεταξύ των δύο άκρων. Το <strong>Κεφάλαιο 5</strong> καλύπτει την ασφάλεια, την
+εξουσιοδότηση και τον χειρισμό ταυτόχρονων κρατήσεων. Το <strong>Κεφάλαιο
+6</strong> αφορά το μετωπιαίο άκρο και το <strong>Κεφάλαιο 7</strong> τον
+αλγόριθμο συστάσεων. Τα <strong>Κεφάλαια 8 και 9</strong> καλύπτουν την εξαγωγή
+δεδομένων και τις οδηγίες εγκατάστασης. Το <strong>Κεφάλαιο 10</strong>
+συγκεντρώνει τις σχεδιαστικές αποφάσεις και τις παραδοχές, και ο
+<strong>Επίλογος</strong> τις δυσκολίες που συναντήσαμε.
+</p>
+</section>
+
+<!-- ========================= 2. ΑΡΧΙΤΕΚΤΟΝΙΚΗ ========================= -->
+<section class="chapter" id="ch2">
+<h1>2. Αρχιτεκτονική του συστήματος</h1>
+
+<h2>2.1 Επισκόπηση</h2>
+<p>
+Η εφαρμογή χωρίζεται σε τρία επίπεδα που επικοινωνούν αποκλειστικά μέσω
+κρυπτογραφημένων συνδέσεων: μια μονοσέλιδη εφαρμογή (SPA) στον browser, ένα REST
+API, και μια σχεσιακή βάση δεδομένων.
+</p>
+
+<figure>
+<div class="ascii">
+   ┌─────────────────────────────────┐
+   │   Browser — React SPA           │
+   │   https://localhost:5173        │
+   │                                 │
+   │   JWT στο localStorage          │
+   │   axios interceptor             │
+   └───────────────┬─────────────────┘
+                   │  HTTPS
+                   │  Authorization: Bearer &lt;JWT&gt;
+                   ▼
+   ┌─────────────────────────────────┐
+   │   FastAPI — REST API            │
+   │   https://localhost:8000/api    │
+   │                                 │
+   │   routers/  auth · admin ·      │
+   │             events · bookings · │
+   │             messages · recomm.  │
+   │   schemas.py  (Pydantic DTOs)   │
+   │   security.py (JWT · bcrypt)    │
+   │   services/recommender.py       │
+   └───────────────┬─────────────────┘
+                   │  SQLAlchemy ORM
+                   ▼
+   ┌─────────────────────────────────┐
+   │   MySQL 8 — staywebapp          │
+   │   9 πίνακες, utf8mb4            │
+   └─────────────────────────────────┘
+</div>
+<figcaption>Σχήμα 2.1 — Τα τρία επίπεδα της εφαρμογής.</figcaption>
+</figure>
+
+<h2>2.2 Τεχνολογίες και αιτιολόγηση</h2>
+<table>
+  <tr><th style="width:26%">Επίπεδο</th><th style="width:30%">Τεχνολογία</th><th>Γιατί</th></tr>
+  <tr>
+    <td>Μετωπιαίο άκρο</td>
+    <td>React 18, Vite 6, React Router 6</td>
+    <td>Η εκφώνηση (§6 Λοιπών) απαιτεί JavaScript web framework. Το Vite δίνει
+        άμεσο dev server και ενσωματωμένο proxy προς το API.</td>
+  </tr>
+  <tr>
+    <td>Νωτιαίο άκρο</td>
+    <td>FastAPI, Pydantic v2, Uvicorn</td>
+    <td>Τα Pydantic σχήματα επικυρώνουν την είσοδο και παράγουν τα DTO εξόδου από
+        ένα σημείο, ενώ το <code>/docs</code> δίνει δωρεάν διαδραστική τεκμηρίωση.</td>
+  </tr>
+  <tr>
+    <td>ORM</td>
+    <td>SQLAlchemy 2</td>
+    <td>Η εκφώνηση απαιτεί απεικόνιση του σχεσιακού μοντέλου σε αντικειμενοστρεφές.</td>
+  </tr>
+  <tr>
+    <td>Βάση</td>
+    <td>MySQL 8 (utf8mb4)</td>
+    <td>Υποστήριξη <code>SELECT … FOR UPDATE</code>, απαραίτητη για την αποφυγή
+        υπερκρατήσεων (§5.4).</td>
+  </tr>
+  <tr>
+    <td>Ασφάλεια</td>
+    <td>TLS, PyJWT, bcrypt</td>
+    <td>Η εκφώνηση §1 απαιτεί κρυπτογράφηση όλων των αλληλεπιδράσεων· οι κωδικοί
+        δεν αποθηκεύονται ποτέ σε καθαρό κείμενο.</td>
+  </tr>
+</table>
+
+<h2>2.3 Η ροή ενός αιτήματος</h2>
+<p>
+Παράδειγμα: ο χρήστης υποβάλλει κράτηση. Το component καλεί τη συνάρτηση του
+API facade, ποτέ απευθείας τον axios. Ο interceptor προσθέτει το JWT. Το αίτημα
+φτάνει στον router, όπου το Pydantic έχει ήδη επικυρώσει το σώμα. Ο router
+κλειδώνει τη γραμμή της εκδήλωσης και του τύπου εισιτηρίου, ελέγχει
+διαθεσιμότητα, εγγράφει την κράτηση και μειώνει το <code>available</code> μέσα
+στην ίδια συναλλαγή. Το αποτέλεσμα επιστρέφει ως DTO.
+</p>
+<p>
+Η ουσιώδης αρχή είναι ότι <strong>η διαθεσιμότητα αποφασίζεται πάντα από τον
+server</strong>. Το μετωπιαίο άκρο εμφανίζει αριθμούς, δεν τους υπολογίζει: δύο
+χρήστες που κρατούν την ίδια στιγμή θα πάρουν σωστό αποτέλεσμα επειδή ο έλεγχος
+γίνεται κάτω από κλείδωμα στη βάση, όχι στον browser.
+</p>
+</section>
+
+<!-- ========================= 3. ΒΑΣΗ ΔΕΔΟΜΕΝΩΝ ========================= -->
+<section class="chapter" id="ch3">
+<h1>3. Σχεδίαση της βάσης δεδομένων</h1>
+
+<h2>3.1 Οντότητες και σχέσεις</h2>
+<p>
+Η βάση αποτελείται από εννέα πίνακες. Ο πυρήνας είναι η εκδήλωση: γύρω της
+οργανώνονται οι τύποι εισιτηρίων, οι κρατήσεις, οι κατηγορίες, το οπτικό υλικό,
+τα μηνύματα και οι επισκέψεις.
+</p>
+
+<table>
+  <tr><th style="width:30%">Πίνακας</th><th style="width:22%">Σχέση</th><th>Περιγραφή</th></tr>
+  <tr><td><code>users</code></td><td>—</td><td>Χρήστες με ΑΦΜ, τοποθεσία, <code>status</code> και <code>role</code>.</td></tr>
+  <tr><td><code>events</code></td><td>N:1 → users</td><td>Εκδηλώσεις· <code>organizer_id</code> ο δημιουργός.</td></tr>
+  <tr><td><code>ticket_types</code></td><td>N:1 → events</td><td>Τύποι εισιτηρίων με τιμή, ποσότητα και διαθέσιμο υπόλοιπο.</td></tr>
+  <tr><td><code>bookings</code></td><td>N:1 → users, events, ticket_types</td><td>Κρατήσεις με πλήθος, συνολικό κόστος και κατάσταση.</td></tr>
+  <tr><td><code>event_categories</code></td><td>—</td><td>Κατάλογος <strong>μοναδικών</strong> ονομάτων κατηγοριών.</td></tr>
+  <tr><td><code>event_has_categories</code></td><td>N:M γέφυρα</td><td>Συνδέει εκδηλώσεις με κατηγορίες.</td></tr>
+  <tr><td><code>event_media</code></td><td>N:1 → events</td><td>Ονόματα αρχείων οπτικού υλικού.</td></tr>
+  <tr><td><code>messages</code></td><td>N:1 → users (×2), events</td><td>Μηνύματα με αποστολέα, παραλήπτη και <strong>υποχρεωτική</strong> εκδήλωση.</td></tr>
+  <tr><td><code>event_visits</code></td><td>N:1 → users, events</td><td>Επισκέψεις σε σελίδα εκδήλωσης — τα δεδομένα cold start του §13.</td></tr>
+</table>
+
+<h2>3.2 Από το DTD στο σχεσιακό μοντέλο</h2>
+<p>
+Το DTD της εκφώνησης (§7α) περιγράφει ιεραρχικό έγγραφο. Η μετάφρασή του σε
+σχεσιακό σχήμα απαίτησε τρεις αποφάσεις:
+</p>
+<ul>
+  <li>Τα <strong>επαναλαμβανόμενα στοιχεία</strong> (<code>Category+</code>,
+      <code>TicketType+</code>, <code>Booking*</code>, <code>Photo*</code>) έγιναν
+      ξεχωριστοί πίνακες με ξένο κλειδί προς την εκδήλωση.</li>
+  <li>Το <strong>προαιρετικό <code>GeoLocation</code></strong> έγινε δύο
+      <code>NULL</code>-able στήλες. Όταν λείπουν συντεταγμένες το API επιστρέφει
+      <code>geoLocation: null</code> και <em>όχι</em> <code>{lat:0, lng:0}</code> —
+      το σημείο (0,0) είναι υπαρκτή τοποθεσία στον Ατλαντικό και θα εμφάνιζε
+      ψευδή πινέζα στον χάρτη.</li>
+  <li>Το <code>EventID="EV1024"</code> του DTD αφορά <strong>μόνο την εξαγωγή
+      XML</strong>. Εσωτερικά τα αναγνωριστικά είναι ακέραιοι αυτόματης αύξησης.</li>
+</ul>
+
+<h2>3.3 Μετανάστευση 001 — κατηγορίες από 1:N σε N:M</h2>
+<p>
+Στο αρχικό σχήμα ο πίνακας <code>event_categories</code> είχε στήλη
+<code>event_id NOT NULL</code>: κάθε γραμμή κατηγορίας ανήκε σε μία εκδήλωση.
+Αυτό σήμαινε ότι πενήντα συναυλίες θα παρήγαγαν πενήντα ξεχωριστές γραμμές με
+όνομα «Music», κάνοντας το φίλτρο <code>?category=Music</code> της §8 αδύνατο να
+λειτουργήσει σωστά.
+</p>
+<p>
+Η μετανάστευση αποσυνδέει τον κατάλογο κατηγοριών από τη συγκεκριμένη εκδήλωση,
+επιβάλλει μοναδικότητα στο όνομα και εισάγει τον πίνακα-γέφυρα
+<code>event_has_categories</code>. Το πρωτόκολλο προς το μετωπιαίο άκρο
+<strong>δεν άλλαξε</strong>: το πεδίο <code>categories</code> παραμένει απλός
+πίνακας συμβολοσειρών και ο server κάνει <em>get-or-create</em> κατά τη
+δημιουργία.
+</p>
+
+<h2>3.4 Μετανάστευση 002 — διαγραφή μηνυμάτων ανά χρήστη</h2>
+<p>
+Η εκφώνηση §10 απαιτεί οι χρήστες να διαγράφουν μηνύματα από τους καταλόγους
+εισερχομένων και απεσταλμένων. Η ίδια γραμμή του <code>messages</code> όμως
+εξυπηρετεί <strong>και τις δύο πλευρές</strong>: είναι το εισερχόμενο του
+παραλήπτη και ταυτόχρονα το απεσταλμένο του αποστολέα.
+</p>
+<div class="note">
+  <span class="note__label">Το πρόβλημα</span>
+  <p>
+  Μια απλή εντολή <code>DELETE</code> θα έσβηνε το μήνυμα και από τον συνομιλητή.
+  Ο ένας χρήστης θα μπορούσε δηλαδή να εξαφανίσει περιεχόμενο από τον κατάλογο
+  του άλλου — συμπεριφορά που καμία εφαρμογή μηνυμάτων δεν επιτρέπει.
+  </p>
+</div>
+<p>
+Η λύση είναι δύο ανεξάρτητες σημαίες, <code>deleted_by_sender</code> και
+<code>deleted_by_receiver</code>. Ο καθένας κρύβει το μήνυμα μόνο από τη δική του
+όψη. Όταν το κρύψουν και οι δύο, η γραμμή δεν είναι πλέον ορατή σε κανέναν και
+το API τη διαγράφει οριστικά, ώστε ο πίνακας να μη γεμίζει με αόρατα δεδομένα.
+Δύο ευρετήρια, στα <code>(to_user_id, deleted_by_receiver)</code> και
+<code>(from_user_id, deleted_by_sender)</code>, εξυπηρετούν τους δύο καταλόγους
+και το <code>unread-count</code> που το μετωπιαίο άκρο ζητά κάθε 30 δευτερόλεπτα.
+</p>
+</section>
+
+<!-- =========================== 4. ΤΟ API =========================== -->
+<section class="chapter" id="ch4">
+<h1>4. Το REST API ως συμβόλαιο</h1>
+
+<h2>4.1 Γιατί γράφτηκε πρώτο</h2>
+<p>
+Πριν γραφτεί γραμμή κώδικα σε οποιοδήποτε άκρο, συντάχθηκε το αρχείο
+<code>API_CONTRACT.md</code>: μια πλήρης προδιαγραφή των endpoints, των DTO και
+των κωδικών σφάλματος. Ο λόγος ήταν πρακτικός. Με δύο άτομα να δουλεύουν
+παράλληλα, κάθε σιωπηλή απόκλιση του ενός εμφανιζόταν στον άλλον ως ανεξήγητο
+σφάλμα. Το συμβόλαιο έγινε η μοναδική πηγή αλήθειας, με ρητό κανόνα ότι καμία
+αλλαγή δεν γίνεται χωρίς συμφωνία και καταγραφή στο changelog.
+</p>
+<p>
+Η πρακτική αυτή απέδωσε: το μετωπιαίο άκρο αναπτύχθηκε εξ ολοκλήρου πάνω σε
+εικονικά δεδομένα (§6.2) και, όταν ήρθε η ώρα της ένωσης, οι δύο πλευρές
+ταίριαξαν σε επίπεδο πεδίων χωρίς αλλαγές στα DTO.
+</p>
+
+<h2>4.2 Εγκάρσιες συμβάσεις</h2>
+<p>Οι παρακάτω κανόνες ισχύουν σε <em>όλα</em> τα endpoints.</p>
+
+<h3>Τυποποιημένη μορφή σφάλματος</h3>
+<p>
+Κάθε σφάλμα, χωρίς εξαίρεση, επιστρέφεται στην ίδια μορφή. Δύο exception handlers
+στο <code>main.py</code> κανονικοποιούν ακόμα και τα σφάλματα του ίδιου του
+framework, ώστε ένα 404 σε άγνωστη διαδρομή να μη διαφέρει από ένα 404 του δικού
+μας κώδικα:
+</p>
+<pre><code>{ "error": { "code": "SEATS_UNAVAILABLE", "message": "Εξαντλήθηκαν οι θέσεις." } }</code></pre>
+
+<h3>Επικύρωση: 400, ποτέ 422</h3>
+<p>
+Το Pydantic παράγει από προεπιλογή 422. Ο αντίστοιχος handler το μετατρέπει σε
+<strong>400 <code>VALIDATION_ERROR</code></strong> με χάρτη πεδίου προς μήνυμα.
+Οι διαδρομές είναι <em>dotted</em> και περιλαμβάνουν δείκτες λίστας, ώστε το
+μετωπιαίο άκρο να τοποθετεί το σφάλμα κάτω από το σωστό πεδίο της φόρμας:
+</p>
+<pre><code>{ "error": { "code": "VALIDATION_ERROR", "message": "…",
+  "details": {
+    "capacity": "Input should be greater than or equal to 1",
+    "ticketTypes.0.quantity": "Input should be greater than or equal to 1"
+  } } }</code></pre>
+<p>
+Σφάλματα που αφορούν <em>σχέση δύο πεδίων</em> — για παράδειγμα «η λήξη πρέπει να
+είναι μετά την έναρξη» — δεν χρεώνονται σε συγκεκριμένο πεδίο και έρχονται με
+κλειδί <code>"body"</code>, ώστε να εμφανίζονται ως μήνυμα πάνω από τη φόρμα.
+</p>
+
+<h3>Σελιδοποίηση</h3>
+<p>
+Κάθε λίστα δέχεται <code>?page=1&amp;pageSize=20</code> και επιστρέφει τον ίδιο
+περιτυλιγμένο τύπο με <code>items</code>, <code>page</code>, <code>pageSize</code>,
+<code>total</code> και <code>totalPages</code>. Σελίδα πέρα από το τέλος
+επιστρέφει <strong>200 με κενή λίστα</strong>, όχι 404: η αναζήτηση δεν απέτυχε,
+απλώς δεν έχει άλλα αποτελέσματα.
+</p>
+
+<h3>Χρήματα και ημερομηνίες</h3>
+<p>
+Τα ποσά ταξιδεύουν ως <strong>συμβολοσειρά με δύο δεκαδικά</strong>
+(<code>"18.00"</code>), ώστε να μην εισαχθούν σφάλματα κινητής υποδιαστολής στη
+σειριοποίηση. Οι ημερομηνίες είναι <strong>ISO-8601 σε UTC με κατάληξη
+<code>Z</code></strong>. Μοναδική εξαίρεση η εξαγωγή XML, που γράφει ημερομηνίες
+χωρίς <code>Z</code> επειδή έτσι τις ορίζει το DTD της εκφώνησης.
+</p>
+
+<h2>4.3 Κατάλογος endpoints</h2>
+<p>Υλοποιήθηκαν 27 endpoints, οργανωμένα σε έξι ενότητες.</p>
+<table>
+  <tr><th style="width:22%">Ενότητα</th><th style="width:12%">Πλήθος</th><th>Ενδεικτικά</th></tr>
+  <tr><td>Ταυτοποίηση</td><td>2</td><td><code>POST /auth/register</code>, <code>POST /auth/login</code></td></tr>
+  <tr><td>Διαχείριση</td><td>6</td><td><code>GET /admin/users</code>, <code>POST /admin/users/{id}/approve</code>, <code>GET /admin/events/export</code></td></tr>
+  <tr><td>Εκδηλώσεις</td><td>9</td><td><code>GET /events</code>, <code>POST /events</code>, <code>POST /events/{id}/publish</code>, <code>POST /events/{id}/cancel</code></td></tr>
+  <tr><td>Κρατήσεις</td><td>2</td><td><code>POST /bookings</code>, <code>GET /bookings/mine</code></td></tr>
+  <tr><td>Μηνύματα</td><td>7</td><td><code>GET /messages/inbox</code>, <code>GET /messages/unread-count</code>, <code>DELETE /messages/{id}</code></td></tr>
+  <tr><td>Συστάσεις</td><td>1</td><td><code>GET /recommendations</code></td></tr>
+</table>
+
+<h2>4.4 Ο κύκλος ζωής μιας εκδήλωσης</h2>
+<p>
+Μια εκδήλωση γεννιέται σε κατάσταση <code>DRAFT</code>: δεν εμφανίζεται στην
+αναζήτηση και δεν δέχεται κρατήσεις. Απαιτείται ρητή δημοσίευση. Η κατάσταση
+αλλάζει <strong>μόνο</strong> μέσω των <code>/publish</code> και
+<code>/cancel</code> — η ενημέρωση με <code>PUT</code> δεν την αγγίζει ποτέ, ώστε
+μια αθώα επεξεργασία να μην μπορεί να δημοσιεύσει κατά λάθος.
+</p>
+<figure>
+<div class="ascii">
+   POST /events          POST /{id}/publish        POST /{id}/cancel
+        │                        │                        │
+        ▼                        ▼                        ▼
+   ┌─────────┐            ┌───────────┐            ┌───────────┐
+   │  DRAFT  │───────────▶│ PUBLISHED │───────────▶│ CANCELLED │
+   └─────────┘            └───────────┘            └───────────┘
+        │                        │
+        │ DELETE (μόνο αν        │ δέχεται κρατήσεις
+        │ δεν υπάρχουν           │ ορατή στην αναζήτηση
+        ▼ κρατήσεις)
+   ┌─────────┐
+   │ σβήνεται│
+   └─────────┘
+</div>
+<figcaption>Σχήμα 4.1 — Καταστάσεις εκδήλωσης και οι επιτρεπτές μεταβάσεις.</figcaption>
+</figure>
+<p>
+Η ακύρωση εκτελείται σε <strong>μία συναλλαγή</strong>: η κατάσταση γίνεται
+<code>CANCELLED</code> και ταυτόχρονα αποστέλλεται ενημερωτικό μήνυμα σε κάθε
+<em>μοναδικό</em> χρήστη με ενεργή κράτηση, όπως απαιτεί η §10. Ένα μήνυμα ανά
+χρήστη και όχι ανά κράτηση, με αποστολέα τον διοργανωτή ώστε η απάντηση να πάει
+στον σωστό παραλήπτη. Οι κρατήσεις <strong>διατηρούνται</strong> για λόγους
+ιστορικότητας και ιχνηλασιμότητας, όπως ορίζει η εκφώνηση.
+</p>
+</section>
+
+<!-- ========================== 5. ΑΣΦΑΛΕΙΑ ========================== -->
+<section class="chapter" id="ch5">
+<h1>5. Ασφάλεια και εξουσιοδότηση</h1>
+
+<h2>5.1 Κρυπτογράφηση της μεταφοράς</h2>
+<p>
+Η εκφώνηση §1 απαιτεί όλες οι αλληλεπιδράσεις να είναι κρυπτογραφημένες. Και τα
+δύο άκρα εξυπηρετούνται μέσω TLS: το API στο <code>https://localhost:8000</code>
+και ο dev server του μετωπιαίου άκρου στο <code>https://localhost:5173</code>,
+χρησιμοποιώντας κοινό αυτο-υπογεγραμμένο πιστοποιητικό που παράγεται από το
+<code>make-certs.sh</code>. Οι κλήσεις προς <code>/api</code> δρομολογούνται μέσω
+του proxy του Vite, οπότε ο browser τις βλέπει ως ίδιας προέλευσης.
+</p>
+
+<h2>5.2 Κωδικοί και JWT</h2>
+<p>
+Οι κωδικοί αποθηκεύονται κατακερματισμένοι με <strong>bcrypt</strong> και δεν
+επιστρέφονται ποτέ σε κανένα DTO. Μετά την επιτυχή είσοδο εκδίδεται JSON Web
+Token με ωφέλιμο φορτίο:
+</p>
+<pre><code>{ "sub": "12", "username": "maria21", "role": "USER", "exp": … }</code></pre>
+<p>
+Το πεδίο <code>sub</code> είναι <strong>συμβολοσειρά</strong>, όπως επιβάλλει το
+πρότυπο JWT, παρότι εσωτερικά τα αναγνωριστικά είναι ακέραιοι. Η λεπτομέρεια
+καταγράφηκε ρητά στο συμβόλαιο, γιατί μια σύγκριση <code>===</code> με ακέραιο
+στο μετωπιαίο άκρο θα αποτύγχανε σιωπηλά σε κάθε έλεγχο ιδιοκτησίας.
+</p>
+
+<h2>5.3 Ρόλοι ανά ενέργεια, όχι ανά χρήστη</h2>
+<p>
+Η εκφώνηση ορίζει τέσσερις ρόλους, αλλά ο «διοργανωτής» και ο «συμμετέχων»
+<strong>δεν είναι σταθερές ιδιότητες</strong>: ο ίδιος χρήστης είναι διοργανωτής
+στις εκδηλώσεις που δημιουργεί και συμμετέχων σε όσες κρατά. Το JWT κρατά μόνο
+<code>ADMIN</code> ή <code>USER</code>· τα υπόλοιπα δικαιώματα κρίνονται ανά πόρο,
+από την ιδιοκτησία.
+</p>
+<table>
+  <tr><th style="width:14%">Κωδικός</th><th style="width:26%">Σημασία</th><th>Αντίδραση της διεπαφής</th></tr>
+  <tr>
+    <td><strong>401</strong></td>
+    <td>Λείπει, έληξε ή είναι άκυρο το JWT</td>
+    <td>Καθαρισμός συνεδρίας και ανακατεύθυνση στην είσοδο</td>
+  </tr>
+  <tr>
+    <td><strong>403</strong></td>
+    <td>Έγκυρο token, λάθος ρόλος ή μη ιδιοκτήτης</td>
+    <td>Μήνυμα σφάλματος — <strong>χωρίς</strong> αποσύνδεση</td>
+  </tr>
+</table>
+<p>
+Η διάκριση δεν είναι ακαδημαϊκή. Αν η διεπαφή αποσύνδεε τον χρήστη και στις δύο
+περιπτώσεις, θα τον πετούσε έξω κάθε φορά που πατούσε κάτι που δεν του ανήκει.
+</p>
+<p>
+Ξεχωριστή περίπτωση αποτελεί η πρόσβαση σε αδημοσίευτη εκδήλωση άλλου χρήστη: το
+API επιστρέφει <strong>404 και όχι 403</strong>. Η επιλογή είναι σκόπιμη, αφού το
+403 θα επιβεβαίωνε την ύπαρξη ενός πόρου που ο χρήστης δεν δικαιούται να γνωρίζει.
+</p>
+
+<h2>5.4 Ταυτόχρονες κρατήσεις</h2>
+<p>
+Ο κίνδυνος της υπερκράτησης εμφανίζεται όταν δύο αιτήματα ελέγξουν τη
+διαθεσιμότητα πριν προλάβει οποιοδήποτε να γράψει. Η υλοποίηση κλειδώνει τις
+εμπλεκόμενες γραμμές με <code>SELECT … FOR UPDATE</code> και εκτελεί έλεγχο και
+εγγραφή μέσα στην ίδια συναλλαγή.
+</p>
+<p>
+Επιπλέον, τα κλειδώματα λαμβάνονται πάντα με <strong>σταθερή σειρά</strong> —
+πρώτα η εκδήλωση, έπειτα οι τύποι εισιτηρίων κατά αύξον αναγνωριστικό — τόσο στην
+κράτηση όσο και στην ενημέρωση εκδήλωσης. Χωρίς αυτή τη σύμβαση, δύο ταυτόχρονες
+ενέργειες που κλειδώνουν τους ίδιους πόρους με αντίστροφη σειρά θα οδηγούσαν σε
+αδιέξοδο (deadlock).
+</p>
+
+<h2>5.5 Περιορισμός της επικοινωνίας</h2>
+<p>
+Η αποστολή μηνύματος επιτρέπεται μόνο όταν οι δύο πλευρές συνδέονται μέσω
+<em>συγκεκριμένης</em> εκδήλωσης: ο ένας είναι ο διοργανωτής και ο άλλος έχει
+ενεργή κράτηση σε αυτήν. Χωρίς τον έλεγχο, οποιοσδήποτε εγκεκριμένος χρήστης θα
+μπορούσε να στείλει μήνυμα σε οποιονδήποτε άλλον — δηλαδή ανοιχτό κανάλι
+ανεπιθύμητης αλληλογραφίας.
+</p>
+</section>
+
+<!-- ======================= 6. ΜΕΤΩΠΙΑΙΟ ΑΚΡΟ ======================= -->
+<section class="chapter" id="ch6">
+<h1>6. Το μετωπιαίο άκρο</h1>
+
+<h2>6.1 Οργάνωση</h2>
+<p>
+Ο κώδικας οργανώνεται κατά αρμοδιότητα και όχι κατά τύπο αρχείου. Δύο κανόνες
+τηρούνται απαρέγκλιτα: <strong>καμία κλήση δικτύου δεν γίνεται από component</strong>
+— όλες περνούν από το <code>api/index.js</code> — και <strong>κανένα χρώμα ή
+διάστημα δεν γράφεται απευθείας</strong> μέσα σε CSS component.
+</p>
+<pre><code>src/
+  api/         facade προς το API (μοναδικό σημείο κλήσεων)
+    client.js    axios instance · JWT interceptor
+    mock/        εικονικά δεδομένα ανάπτυξης
+  auth/        αποθήκευση JWT (μοναδικό σημείο)
+  context/     AuthContext — χρήστης, ρόλος, login/logout
+  routes/      ProtectedRoute — περιορισμός ανά ρόλο
+  components/  επαναχρησιμοποιήσιμα (events/, ui/, form/, layout/)
+  pages/       μία σελίδα ανά διαδρομή
+  styles/      theme.css (tokens) · components.css · global.css</code></pre>
+
+<h2>6.2 Ανάπτυξη mock-first</h2>
+<p>
+Επειδή τα δύο άκρα αναπτύσσονταν παράλληλα, το μετωπιαίο άκρο δεν μπορούσε να
+περιμένει το API. Κάθε συνάρτηση του facade γράφτηκε με <strong>δύο
+διαδρομές</strong>: μία που απαντά από εικονικά δεδομένα στη μνήμη και μία που
+καλεί τον πραγματικό server.
+</p>
+<pre><code>export async function createBooking({ eventId, ticketTypeId, numberOfTickets }) {
+  if (USE_MOCK) {
+    /* … προσομοίωση των ελέγχων του server … */
+  }
+  const { data } = await client.post('/bookings', { … })
+  return data
+}</code></pre>
+<p>
+Κρίσιμο σημείο: τα εικονικά δεδομένα προσομοιώνουν και τις
+<strong>αποτυχίες</strong> με τους ίδιους κωδικούς σφάλματος, όχι μόνο τις
+επιτυχίες. Έτσι οι οθόνες σφαλμάτων δοκιμάστηκαν πριν καν υπάρξει server. Μετά
+την ένωση, η επιλογή οδηγείται από μεταβλητή περιβάλλοντος και η προεπιλογή είναι
+ο πραγματικός server· τα εικονικά δεδομένα αφαιρούνται εντελώς από την τελική
+δέσμη κατά το χτίσιμο.
+</p>
+
+<h2>6.3 Σύστημα σχεδίασης</h2>
+<p>
+Αντί για έτοιμη βιβλιοθήκη components, χρησιμοποιήθηκε καθαρό CSS με μεταβλητές
+που ορίζουν χρώματα, αποστάσεις, τυπογραφία και ακτίνες γωνιών. Η επιλογή
+τεκμηριώνεται από την εκφώνηση (§5 Λοιπών), όπου η ποιότητα της οργάνωσης
+βαθμολογείται: ένα μικρό σύνολο μεταβλητών κρατά τη διεπαφή συνεπή και
+επιτρέπει αλλαγή θέματος από ένα σημείο.
+</p>
+
+<h2>6.4 Μη αναστρέψιμες ενέργειες</h2>
+<p>
+Η κράτηση δεν αναιρείται — δεν υπάρχει endpoint διαγραφής της, κατά την §9. Το
+παράθυρο επιβεβαίωσης πριν την υποβολή είναι επομένως <strong>λειτουργική
+απαίτηση</strong> και όχι ευγένεια προς τον χρήστη. Το ίδιο μοτίβο εφαρμόζεται
+στη δημοσίευση, την ακύρωση και τη διαγραφή μηνύματος.
+</p>
+<p>
+Παράλληλα, η διεπαφή αποκρύπτει ενέργειες που ο server θα απέρριπτε: το κουμπί
+διαγραφής εκδήλωσης εμφανίζεται μόνο όταν το πεδίο <code>isDeletable</code> είναι
+αληθές, και το όνομα τύπου εισιτηρίου κλειδώνεται όταν υπάρχουν κρατήσεις (§10.3).
+Ο έλεγχος γίνεται και στις δύο πλευρές· η διεπαφή δεν <em>αποφασίζει</em>, απλώς
+αποτρέπει προβλέψιμα σφάλματα.
+</p>
+</section>
+
+<!-- ======================== 7. ΣΥΣΤΑΣΕΙΣ ======================== -->
+<section class="chapter" id="ch7">
+<h1>7. Ο αλγόριθμος συστάσεων</h1>
+
+<h2>7.1 Το μοντέλο</h2>
+<p>
+Η εκφώνηση §13 ζητά <strong>Biased Matrix Factorization υλοποιημένο εκ του
+μηδενός</strong>. Η πρόβλεψη για τον χρήστη <em>u</em> και την εκδήλωση <em>i</em>
+δίνεται από:
+</p>
+<p class="formula">r̂(u,i) = μ + b<sub>u</sub> + b<sub>i</sub> + q<sub>i</sub><sup>T</sup> · p<sub>u</sub></p>
+<table>
+  <tr><th style="width:16%">Όρος</th><th>Ερμηνεία</th></tr>
+  <tr><td>μ</td><td>Ο γενικός μέσος όρος όλων των βαθμολογιών.</td></tr>
+  <tr><td>b<sub>u</sub></td><td>Προκατάληψη χρήστη — πόσο πιο δραστήριος είναι από τον μέσο όρο.</td></tr>
+  <tr><td>b<sub>i</sub></td><td>Προκατάληψη εκδήλωσης — πόσο πιο δημοφιλής είναι από τον μέσο όρο.</td></tr>
+  <tr><td>p<sub>u</sub>, q<sub>i</sub></td><td>Διανύσματα λανθανόντων χαρακτηριστικών, <em>k</em> διαστάσεων.</td></tr>
+</table>
+<p>
+Οι όροι b<sub>u</sub> και b<sub>i</sub> είναι ακριβώς αυτό που καθιστά το μοντέλο
+<em>biased</em>. Χωρίς αυτούς, το εσωτερικό γινόμενο θα έπρεπε να εξηγήσει μόνο
+του και τη δημοτικότητα κάθε εκδήλωσης και τη δραστηριότητα κάθε χρήστη —
+μεγέθη που δεν έχουν σχέση με το <em>ταίριασμα</em> των δύο.
+</p>
+
+<h2>7.2 Εκπαίδευση</h2>
+<p>
+Η εκπαίδευση γίνεται με στοχαστική κατάβαση κλίσης. Για κάθε παρατήρηση
+υπολογίζεται το σφάλμα <em>e = r − r̂</em> και οι παράμετροι κινούνται αντίθετα
+από την κλίση της συνάρτησης κόστους:
+</p>
+<p class="formula">Σ (r − r̂)² + λ(b<sub>u</sub>² + b<sub>i</sub>² + ‖p<sub>u</sub>‖² + ‖q<sub>i</sub>‖²)</p>
+<p>
+Ο όρος κανονικοποίησης λ τιμωρεί τις μεγάλες τιμές και εμποδίζει το μοντέλο να
+«αποστηθίσει» τα λίγα διαθέσιμα δεδομένα. Δύο λεπτομέρειες της υλοποίησης αξίζει
+να σημειωθούν:
+</p>
+<ul>
+  <li>Τα διανύσματα <em>P</em> και <em>Q</em> αρχικοποιούνται με μικρό τυχαίο
+      θόρυβο και <strong>όχι με μηδενικά</strong>. Αν ήταν μηδενικά, το γινόμενο
+      και οι κλίσεις τους θα παρέμεναν μηδέν για πάντα και το μοντέλο δεν θα
+      μάθαινε ποτέ αλληλεπιδράσεις.</li>
+  <li>Κατά την ενημέρωση, το p<sub>u</sub> αντιγράφεται <strong>πριν</strong>
+      μεταβληθεί. Οι δύο ενημερώσεις είναι ταυτόχρονες στα μαθηματικά· η χρήση
+      του ήδη ενημερωμένου p<sub>u</sub> για τον υπολογισμό του q<sub>i</sub> θα
+      έδινε λανθασμένη κλίση.</li>
+</ul>
+<table>
+  <tr><th style="width:28%">Υπερπαράμετρος</th><th style="width:14%">Τιμή</th><th>Σκεπτικό</th></tr>
+  <tr><td>Λανθάνοντα χαρακτηριστικά (k)</td><td>8</td><td>Μικρό, γιατί τα δεδομένα είναι ελάχιστα· μεγάλο k θα οδηγούσε άμεσα σε overfitting.</td></tr>
+  <tr><td>Εποχές</td><td>60</td><td>Επαρκείς για σύγκλιση στο μέγεθος δεδομένων της εφαρμογής.</td></tr>
+  <tr><td>Ρυθμός μάθησης (η)</td><td>0.01</td><td>Συντηρητικός, για σταθερή σύγκλιση.</td></tr>
+  <tr><td>Κανονικοποίηση (λ)</td><td>0.05</td><td>Περιορίζει την υπερπροσαρμογή.</td></tr>
+  <tr><td>Σπόρος τυχαιότητας</td><td>42</td><td>Αναπαραγώγιμα αποτελέσματα: ίδια δεδομένα, ίδιες προτάσεις.</td></tr>
+</table>
+
+<h2>7.3 Implicit feedback</h2>
+<p>
+Η εφαρμογή δεν ζητά από τους χρήστες ρητές βαθμολογίες. Η προτίμηση συνάγεται
+από τη συμπεριφορά: η <strong>επίσκεψη</strong> σε σελίδα εκδήλωσης δείχνει
+ενδιαφέρον, ενώ η <strong>κράτηση</strong> δείχνει δέσμευση — και κοστίζει
+χρήματα, γι' αυτό βαραίνει πενταπλάσια.
+</p>
+<table>
+  <tr><th style="width:34%">Σήμα</th><th style="width:16%">Βάρος</th><th>Πηγή</th></tr>
+  <tr><td>Επίσκεψη σε εκδήλωση</td><td>1.0</td><td><code>event_visits</code></td></tr>
+  <tr><td>Κράτηση</td><td>5.0</td><td><code>bookings</code> (πλην ακυρωμένων)</td></tr>
+  <tr><td>Ανώτατο όριο βαθμολογίας</td><td>10.0</td><td>—</td></tr>
+</table>
+<p>
+Το ανώτατο όριο δεν είναι διακοσμητικό: χωρίς αυτό, ένας χρήστης που άνοιξε
+σαράντα φορές την ίδια σελίδα θα κυριαρχούσε στην εκπαίδευση και θα στρέβλωνε
+όλες τις προκαταλήψεις. Όταν ο ίδιος χρήστης και επισκέφθηκε και κράτησε την ίδια
+εκδήλωση, τα δύο σήματα αθροίζονται σε μία βαθμολογία.
+</p>
+<div class="note">
+  <span class="note__label">Πώς συλλέγονται οι επισκέψεις</span>
+  <p>
+  Η καταγραφή γίνεται σιωπηρά στο <code>GET /events/{id}</code>, για συνδεδεμένο
+  χρήστη που <em>δεν</em> είναι ο διοργανωτής, σε δημοσιευμένη εκδήλωση. Οι
+  επισκέψεις του ίδιου του διοργανωτή εξαιρούνται ρητά, γιατί θα μόλυναν τις
+  προτάσεις του με τις δικές του εκδηλώσεις. Στο μετωπιαίο άκρο, η κλήση γίνεται
+  <strong>μία φορά ανά πραγματικό άνοιγμα σελίδας</strong>: το παράθυρο σύνταξης
+  μηνύματος, για παράδειγμα, αποφεύγει σκόπιμα να ξαναζητήσει την εκδήλωση.
+  </p>
+</div>
+
+<h2>7.4 Ψυχρή εκκίνηση</h2>
+<p>
+Η εκφώνηση ορίζει ότι, αν ο χρήστης δεν έχει ιστορικό κρατήσεων, ο αλγόριθμος
+λειτουργεί βάσει μόνο των εκδηλώσεων που έχει επισκεφθεί. Το API επιστρέφει
+επομένως πεδίο <code>strategy</code> με δύο δυνατές τιμές, και η διεπαφή
+προσαρμόζει ανάλογα τον τίτλο <em>και</em> την επεξήγηση, ώστε ο χρήστης να
+κατανοεί σε τι βασίζεται η πρόταση:
+</p>
+<table>
+  <tr><th style="width:34%">strategy</th><th style="width:28%">Τίτλος</th><th>Επεξήγηση στη διεπαφή</th></tr>
+  <tr>
+    <td><code>matrix_factorization</code></td>
+    <td>Προτεινόμενα για εσένα</td>
+    <td>«Με βάση τις κρατήσεις σου και χρήστες με παρόμοια ενδιαφέροντα.»</td>
+  </tr>
+  <tr>
+    <td><code>cold_start_visits</code></td>
+    <td>Μπορεί να σου αρέσουν</td>
+    <td>«Με βάση τις εκδηλώσεις που έχεις δει.»</td>
+  </tr>
+</table>
+<p>
+Από τις υποψήφιες εκδηλώσεις αποκλείονται όσες ο χρήστης έχει ήδη δει ή κρατήσει,
+όσες διοργανώνει ο ίδιος, όσες έχουν ήδη πραγματοποιηθεί και όσες δεν είναι
+δημοσιευμένες. Συνέπεια αυτού είναι ότι το <strong>κενό σύνολο προτάσεων αποτελεί
+απολύτως φυσιολογική απάντηση</strong>· η διεπαφή τότε δεν εμφανίζει καθόλου το
+σχετικό τμήμα, αντί να δείξει άδειο πλαίσιο.
+</p>
+</section>
+
+<!-- ========================== 8. ΕΞΑΓΩΓΗ ========================== -->
+<section class="chapter" id="ch8">
+<h1>8. Εξαγωγή δεδομένων σε XML και JSON</h1>
+<p>
+Η §12 απαιτεί ο διαχειριστής να εξάγει τις εκδηλώσεις σε XML σύμφωνα με το DTD
+της §7, καθώς και σε αντίστοιχη μορφή JSON. Το endpoint
+<code>GET /api/admin/events/export?format=xml|json</code> εξυπηρετεί και τις δύο.
+</p>
+<p>
+Εξάγονται <strong>όλες</strong> οι καταστάσεις εκδηλώσεων, όχι μόνο οι
+δημοσιευμένες: η εκφώνηση ζητά «τις εκδηλώσεις που έχουν δημιουργηθεί από τους
+χρήστες», χωρίς περιορισμό δημοσίευσης. Η σειρά των στοιχείων ακολουθεί αυστηρά
+το DTD, το οποίο απαιτεί συγκεκριμένη διάταξη.
+</p>
+<pre><code>&lt;Event EventID="EV1"&gt;
+  &lt;Title&gt;Συναυλία Σύγχρονης Μουσικής&lt;/Title&gt;
+  &lt;Category&gt;Music&lt;/Category&gt;
+  &lt;Category&gt;Live Performance&lt;/Category&gt;
+  &lt;EventType&gt;Concert&lt;/EventType&gt;
+  &lt;Venue&gt;Θέατρο Πόλης&lt;/Venue&gt;
+  …
+  &lt;GeoLocation Latitude="37.9838" Longitude="23.7275" /&gt;
+  &lt;StartDateTime&gt;2026-11-14T20:30:00&lt;/StartDateTime&gt;
+  …
+  &lt;TicketTypes&gt;
+    &lt;TicketType TicketTypeID="T1"&gt;
+      &lt;Name&gt;General Admission&lt;/Name&gt;
+      &lt;Price&gt;18.00&lt;/Price&gt;
+      &lt;Quantity&gt;250&lt;/Quantity&gt;
+      &lt;Available&gt;248&lt;/Available&gt;
+    &lt;/TicketType&gt;
+  &lt;/TicketTypes&gt;
+  &lt;Bookings&gt;
+    &lt;Booking BookingID="B1"&gt;
+      &lt;Attendee UserID="maria21" /&gt;
+      &lt;Time&gt;2026-09-12T13:03:25&lt;/Time&gt;
+      &lt;TicketTypeRef&gt;T1&lt;/TicketTypeRef&gt;
+      &lt;NumberOfTickets&gt;2&lt;/NumberOfTickets&gt;
+      &lt;TotalCost&gt;36.00&lt;/TotalCost&gt;
+      &lt;BookingStatus&gt;CONFIRMED&lt;/BookingStatus&gt;
+    &lt;/Booking&gt;
+  &lt;/Bookings&gt;
+  &lt;Organizer UserID="org_athens_events" /&gt;
+  &lt;Status&gt;PUBLISHED&lt;/Status&gt;
+  …
+&lt;/Event&gt;</code></pre>
+<p>
+Δύο σημεία χρήζουν προσοχής. Πρώτον, οι ημερομηνίες γράφονται
+<strong>χωρίς κατάληξη <code>Z</code></strong>, σε αντίθεση με το υπόλοιπο API,
+επειδή έτσι τις ορίζει το DTD. Δεύτερον, η ελάχιστη απαίτηση
+<code>Category+</code> του DTD σημαίνει ότι εκδήλωση χωρίς καμία κατηγορία θα
+καθιστούσε <em>ολόκληρο</em> το παραγόμενο έγγραφο μη έγκυρο· γι' αυτό η
+επικύρωση απαιτεί τουλάχιστον μία κατηγορία ήδη κατά τη δημιουργία.
+</p>
+</section>
+
+<!-- ======================= 9. ΕΓΚΑΤΑΣΤΑΣΗ ======================= -->
+<section class="chapter" id="ch9">
+<h1>9. Εγκατάσταση και εκτέλεση</h1>
+
+<h2>9.1 Προαπαιτούμενα</h2>
+<p>Python 3.11 ή νεότερη, Node.js 18 ή νεότερη, MySQL 8, OpenSSL.</p>
+
+<h2>9.2 Βάση δεδομένων</h2>
+<pre><code>mysql -u root -p -e "CREATE DATABASE staywebapp
+                     CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci"
+
+# Σχήμα (με τη σειρά — υπάρχουν εξαρτήσεις ξένων κλειδιών)
+for t in users events event_categories ticket_types bookings \
+         messages event_media event_visits routines; do
+  mysql -u root -p staywebapp &lt; db/staywebapp_$t.sql
+done
+
+# Μεταναστεύσεις
+mysql -u root -p staywebapp &lt; db/migrations/001_event_categories_many_to_many.sql
+mysql -u root -p staywebapp &lt; db/migrations/002_messages_soft_delete.sql</code></pre>
+
+<h2>9.3 Νωτιαίο άκρο</h2>
+<pre><code>python -m venv .venv
+.venv/bin/pip install -r requirements.txt      # Windows: .venv/Scripts/pip
+
+# Αρχείο .env στη ρίζα του έργου:
+#   DATABASE_URL=mysql+pymysql://root:&lt;κωδικός&gt;@127.0.0.1:3306/staywebapp?charset=utf8mb4
+#   JWT_SECRET_KEY=&lt;τυχαία συμβολοσειρά&gt;
+#   JWT_ALGORITHM=HS256
+#   ACCESS_TOKEN_EXPIRE_MINUTES=60
+#   ADMIN_USERNAME=admin
+#   ADMIN_PASSWORD=&lt;κωδικός διαχειριστή&gt;
+
+bash make-certs.sh     # αυτο-υπογεγραμμένο πιστοποιητικό (μία φορά)
+bash run.sh            # https://localhost:8000</code></pre>
+<p>
+Ο χρήστης-διαχειριστής δημιουργείται αυτόματα κατά την πρώτη εκκίνηση, όπως
+απαιτεί η §3 της εκφώνησης. Η διαδραστική τεκμηρίωση του API είναι διαθέσιμη στο
+<code>https://localhost:8000/docs</code>.
+</p>
+
+<h2>9.4 Μετωπιαίο άκρο</h2>
+<pre><code>npm install
+npm run dev            # https://localhost:5173</code></pre>
+<p>
+Επειδή το πιστοποιητικό είναι αυτο-υπογεγραμμένο, ο browser ζητά ρητή αποδοχή
+της εξαίρεσης την πρώτη φορά. Οι κλήσεις προς <code>/api</code> προωθούνται
+εσωτερικά στο νωτιαίο άκρο, οπότε αρκεί <strong>μία</strong> αποδοχή.
+</p>
+</section>
+
+<!-- ================== 10. ΑΠΟΦΑΣΕΙΣ & ΠΑΡΑΔΟΧΕΣ ================== -->
+<section class="chapter" id="ch10">
+<h1>10. Σχεδιαστικές αποφάσεις και παραδοχές</h1>
+
+<h2>10.1 Το συμβόλαιο υπερισχύει</h2>
+<p>
+Καθ' όλη την ανάπτυξη ίσχυσε ένας κανόνας: όπου μια βιαστική υλοποίηση οδηγούσε
+σε κάτι διαφορετικό από το συμβόλαιο, υλοποιούσαμε το συμβόλαιο και το
+σημειώναμε. Στις τρεις περιπτώσεις όπου το API κατέληξε <em>υπερσύνολο</em> της
+προδιαγραφής — προσθέτοντας πεδία ή endpoints χωρίς να αλλάζει υπάρχοντα — και
+στη μία όπου η βάση δεν επέτρεπε αυτό που όριζε το συμβόλαιο, η απόκλιση
+καταγράφηκε στο changelog (έκδοση v1.1).
+</p>
+
+<h2>10.2 Το <code>eventId</code> είναι υποχρεωτικό σε κάθε μήνυμα</h2>
+<p>
+Η στήλη <code>messages.fk_event_id</code> ορίστηκε <code>NOT NULL</code>. Κάθε
+μήνυμα ανήκει σε μία εκδήλωση — παραδοχή που συμφωνεί με την §10, όπου η
+συνομιλία γεννιέται από κράτηση. Δεν υπάρχει «γενικό» μήνυμα εκτός πλαισίου
+εκδήλωσης.
+</p>
+
+<h2>10.3 Οι τύποι εισιτηρίων ταυτοποιούνται με το όνομα</h2>
+<p>
+Το σώμα του αιτήματος ενημέρωσης είναι πανομοιότυπο με αυτό της δημιουργίας και
+<strong>δεν περιέχει αναγνωριστικά</strong> τύπων εισιτηρίων. Η αντιστοίχιση
+γίνεται επομένως με το όνομα: όνομα που υπάρχει ενημερώνεται, όνομα που λείπει
+διαγράφεται, νέο όνομα δημιουργείται. Δύο τύποι με ίδιο όνομα απορρίπτονται κατά
+την επικύρωση, αφού θα ήταν αδύνατο να αντιστοιχιστούν.
+</p>
+<div class="note">
+  <span class="note__label">Συνέπεια</span>
+  <p>
+  Μετονομασία τύπου εισιτηρίου ισοδυναμεί με διαγραφή και δημιουργία. Αν ο τύπος
+  έχει κρατήσεις, η ενέργεια αποτυγχάνει με <code>409 SEATS_UNAVAILABLE</code>.
+  Για να μη διορθώσει ο διοργανωτής ένα τυπογραφικό και φάει ανεξήγητο σφάλμα, η
+  διεπαφή <strong>κλειδώνει το πεδίο ονόματος</strong> για κάθε τύπο με
+  κρατήσεις και εξηγεί τον λόγο.
+  </p>
+</div>
+
+<h2>10.4 Οπτικό υλικό</h2>
+<p>
+Το DTD ορίζει το <code>Media</code> ως προαιρετικό. Στην παρούσα υλοποίηση το
+πεδίο είναι απλός πίνακας ονομάτων αρχείων, χωρίς διεπαφή μεταφόρτωσης· η
+δυνατότητα αποθήκευσης φωτογραφιών υποστηρίζεται από το σχήμα αλλά η μεταφόρτωση
+μέσω πολυμερούς αιτήματος αφέθηκε εκτός εμβέλειας. <strong>Παραδοχή:</strong> η
+εκφώνηση χαρακτηρίζει τις φωτογραφίες προαιρετικές, οπότε η επιλογή δεν
+παραβιάζει απαίτηση.
+</p>
+<p>
+Σημειώνεται ότι η ενημέρωση εκδήλωσης αντικαθιστά <em>ολόκληρο</em> τον πίνακα
+οπτικού υλικού. Το μετωπιαίο άκρο επιστρέφει επομένως αυτούσια τη λίστα που
+έλαβε, αλλιώς κάθε επεξεργασία θα διέγραφε τα υπάρχοντα αρχεία.
+</p>
+
+<h2>10.5 Αποθήκευση του JWT</h2>
+<p>
+Το token αποθηκεύεται στο <code>localStorage</code>. Η επιλογή είναι απλή και
+επιβιώνει σε ανανέωση σελίδας, αλλά είναι <strong>ευάλωτη σε επιθέσεις XSS</strong>:
+κακόβουλος κώδικας που θα εκτελούνταν στη σελίδα θα μπορούσε να το διαβάσει.
+Εναλλακτική θα ήταν cookie με σημαία <code>HttpOnly</code>, που όμως απαιτεί
+προστασία έναντι CSRF. Για το εύρος της εργασίας η επιλογή θεωρήθηκε αποδεκτή και
+καταγράφεται εδώ ρητά ως γνωστός περιορισμός.
+</p>
+
+<h2>10.6 Εκπαίδευση του μοντέλου κατά την κλήση</h2>
+<p>
+Το μοντέλο συστάσεων εκπαιδεύεται επιτόπου σε κάθε αίτημα. Για το μέγεθος
+δεδομένων μιας φοιτητικής εφαρμογής το κόστος είναι αμελητέο. Σε περιβάλλον
+παραγωγής η εκπαίδευση θα εκτελούνταν περιοδικά ως εργασία παρασκηνίου και το
+endpoint θα διάβαζε μόνο τους αποθηκευμένους πίνακες παραγόντων.
+</p>
+</section>
+
+<!-- =========================== 11. ΕΠΙΛΟΓΟΣ =========================== -->
+<section class="chapter" id="ch11">
+<h1>11. Επίλογος</h1>
+
+<h2>11.1 Σύνοψη</h2>
+<p>
+Η εφαρμογή υλοποιεί το σύνολο των λειτουργικών απαιτήσεων της εκφώνησης:
+εγγραφή με έγκριση διαχειριστή, δημιουργία και διαχείριση εκδηλώσεων με έλεγχο
+χωρητικότητας, αναζήτηση με πολλαπλά κριτήρια και σελιδοποίηση, κρατήσεις με
+προστασία από υπερκράτηση, επικοινωνία διοργανωτή–συμμετέχοντα, εξαγωγή σε XML
+κατά το DTD και σε JSON, και σύστημα συστάσεων με Biased Matrix Factorization
+γραμμένο από το μηδέν.
+</p>
+
+<h2>11.2 Δυσκολίες και πώς αντιμετωπίστηκαν</h2>
+
+<h3>Η ένωση δύο άκρων που δεν είχαν ποτέ συναντηθεί</h3>
+<p>
+Η μεγαλύτερη πηγή ρίσκου ήταν ότι τα δύο άκρα αναπτύχθηκαν εντελώς παράλληλα και
+δοκιμάστηκαν μαζί μόνο στο τέλος. Η αντιμετώπιση ήταν το ρητό συμβόλαιο (§4.1)
+και, κατά την ένωση, ένα <strong>αυτοματοποιημένο σενάριο ελέγχου</strong> που
+διατρέχει ολόκληρη τη ροή: εγγραφή, έγκριση, δημιουργία, δημοσίευση, κράτηση,
+μήνυμα, ακύρωση, εξαγωγή, καθώς και τους ελέγχους εξουσιοδότησης. Το σενάριο
+εντόπισε αμέσως ό,τι δεν ταίριαζε και έγινε το δίχτυ ασφαλείας για κάθε επόμενη
+αλλαγή.
+</p>
+
+<h3>Ασυμβατότητες πλατφόρμας</h3>
+<p>
+Τα σενάρια εκκίνησης γράφτηκαν σε περιβάλλον Unix και δεν εκτελούνταν καθόλου σε
+Windows. Εντοπίστηκαν και διορθώθηκαν τρία ανεξάρτητα προβλήματα:
+</p>
+<ul>
+  <li>Το εικονικό περιβάλλον της Python τοποθετεί τα εκτελέσιμα σε
+      <code>Scripts/</code> αντί για <code>bin/</code>.</li>
+  <li>Η κονσόλα των Windows χρησιμοποιεί κωδικοποίηση cp1252, με αποτέλεσμα η
+      εκτύπωση ενός ελληνικού μηνύματος κατά την αρχικοποίηση να
+      <strong>ρίχνει τον server</strong> — αφού είχε ήδη εγγράψει τον διαχειριστή
+      στη βάση. Το σφάλμα έμοιαζε με πρόβλημα βάσης ενώ ήταν κωδικοποίησης.
+      Λύθηκε ορίζοντας ρητά UTF-8 στην έξοδο.</li>
+  <li>Το Git Bash μετέτρεπε το όρισμα <code>-subj "/C=GR/…"</code> του OpenSSL σε
+      διαδρομή αρχείου, αφήνοντας το ιδιωτικό κλειδί χωρίς πιστοποιητικό.</li>
+</ul>
+
+<h3>Ένα σφάλμα που δεν υπήρχε</h3>
+<p>
+Σε δοκιμές μέσω τερματικού, τα ελληνικά ονόματα επέστρεφαν από το API ως
+ερωτηματικά, γεγονός που υποδείκνυε λανθασμένη κωδικοποίηση στη βάση. Ο έλεγχος
+έδειξε ότι οι στήλες ήταν σωστά <code>utf8mb4</code> και ότι τα δεδομένα
+αποθηκεύονταν <em>ακέραια</em> όταν το αίτημα στελνόταν από αρχείο. Η αλλοίωση
+συνέβαινε στο κέλυφος, πριν καν φύγει το αίτημα. Το περιστατικό κατέγραψε ένα
+χρήσιμο μάθημα: <strong>πριν διορθώσεις ένα σφάλμα, βεβαιώσου ότι το μετράς εκεί
+που συμβαίνει</strong>.
+</p>
+
+<h3>Απαιτήσεις κρυμμένες σε μία πρόταση</h3>
+<p>
+Η δυνατότητα διαγραφής μηνυμάτων αναφέρεται σε μία μόνο πρόταση της §10 και
+αρχικά θεωρήθηκε προαιρετική. Η προσεκτική επανανάγνωση της εκφώνησης έδειξε ότι
+είναι ρητή απαίτηση, και οδήγησε στη μετανάστευση 002 (§3.4). Αντίστοιχα, το
+σύστημα συστάσεων αντιμετωπιζόταν ως «μπόνους» έως ότου διαπιστώθηκε ο ρόλος του
+στη βαθμολόγηση. Και στις δύο περιπτώσεις, η πηγή αλήθειας ήταν η εκφώνηση και
+όχι οι δικές μας σημειώσεις.
+</p>
+
+<h2>11.3 Τι θα κάναμε διαφορετικά</h2>
+<ul>
+  <li><strong>Αυτοματοποιημένοι έλεγχοι από την αρχή.</strong> Το σενάριο ελέγχου
+      γράφτηκε κατά την ένωση· αν υπήρχε από την πρώτη εβδομάδα, οι αποκλίσεις θα
+      είχαν εντοπιστεί όσο ήταν φθηνές.</li>
+  <li><strong>Έλεγχος και στις δύο πλατφόρμες νωρίτερα.</strong> Τα προβλήματα
+      φορητότητας ήταν όλα μικρά, αλλά εμφανίστηκαν όλα μαζί τη στιγμή που
+      πιέζαμε για ένωση.</li>
+  <li><strong>Ταυτοποίηση τύπων εισιτηρίων με αναγνωριστικό.</strong> Η
+      αντιστοίχιση με το όνομα λειτουργεί, αλλά κάνει τη μετονομασία αδύνατη όταν
+      υπάρχουν κρατήσεις. Ένα πεδίο <code>id</code> στο σώμα της ενημέρωσης θα
+      ήταν καθαρότερο — απαιτούσε όμως αλλαγή του συμβολαίου και στις δύο πλευρές.</li>
+</ul>
+</section>
+
+</body>
+</html>
