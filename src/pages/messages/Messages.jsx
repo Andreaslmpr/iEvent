@@ -1,21 +1,22 @@
 /* ============================================================
    Messages — σελίδα μηνυμάτων (εκφώνηση §10).
    Κατάλογοι εισερχομένων/απεσταλμένων, άνοιγμα μηνύματος (που το
-   μαρκάρει ως διαβασμένο) και απάντηση.
+   μαρκάρει ως διαβασμένο), απάντηση και διαγραφή.
 
-   Διαγραφή δεν υπάρχει: το backend δεν έχει DELETE /messages/{id}
-   (κοινή γραμμή για inbox/outbox — θέλει migration 002).
+   Η διαγραφή αφορά ΜΟΝΟ τον δικό μας κατάλογο: ο συνομιλητής συνεχίζει
+   να βλέπει το μήνυμα στον δικό του (soft delete ανά χρήστη, §10).
 
    Η σύνθεση ξεκινά πάντα από εκδήλωση: άλλες σελίδες οδηγούν εδώ με
    ?event=<id> (μήνυμα στον διοργανωτή) ή ?to=<id>&toName=<username>.
    ============================================================ */
 import { useCallback, useEffect, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { getInbox, getOutbox, getMessage } from '../../api/index.js'
+import { getInbox, getOutbox, getMessage, deleteMessage } from '../../api/index.js'
 import Loader from '../../components/ui/Loader.jsx'
 import EmptyState from '../../components/ui/EmptyState.jsx'
 import Alert from '../../components/ui/Alert.jsx'
 import Pagination from '../../components/ui/Pagination.jsx'
+import Modal from '../../components/ui/Modal.jsx'
 import ComposeModal from './ComposeModal.jsx'
 import { formatDateTime, errorMessage } from '../../utils/format.js'
 import '../events/events-pages.css'
@@ -36,6 +37,8 @@ export default function Messages() {
   const [opened, setOpened] = useState(null)
   const [compose, setCompose] = useState(null)
   const [notice, setNotice] = useState('')
+  const [toDelete, setToDelete] = useState(null)
+  const [deleting, setDeleting] = useState(false)
 
   const isInbox = folder === 'inbox'
 
@@ -85,6 +88,24 @@ export default function Messages() {
       if (isInbox && !message.read) reload()
     } catch (err) {
       setError(errorMessage(err, 'Το μήνυμα δεν άνοιξε.'))
+    }
+  }
+
+  /* Η διαγραφή δεν αναιρείται, οπότε περνά από επιβεβαίωση (ίδιο μοτίβο με
+     την κράτηση και την ακύρωση εκδήλωσης). */
+  async function confirmDelete() {
+    setError('')
+    setDeleting(true)
+    try {
+      await deleteMessage(toDelete.id)
+      if (opened?.id === toDelete.id) setOpened(null)
+      setToDelete(null)
+      setNotice('Το μήνυμα διαγράφηκε από τον κατάλογό σου.')
+      reload()
+    } catch (err) {
+      setError(errorMessage(err, 'Η διαγραφή απέτυχε.'))
+    } finally {
+      setDeleting(false)
     }
   }
 
@@ -175,10 +196,31 @@ export default function Messages() {
                 >
                   Απάντηση
                 </button>
+                <button className="btn btn--danger" onClick={() => setToDelete(opened)}>
+                  Διαγραφή
+                </button>
               </div>
             </article>
           )}
         </div>
+      )}
+
+      {toDelete && (
+        <Modal
+          title="Διαγραφή μηνύματος"
+          confirmLabel="Διαγραφή"
+          busy={deleting}
+          onClose={() => setToDelete(null)}
+          onConfirm={confirmDelete}
+        >
+          <p>
+            Το μήνυμα «{toDelete.subject}» θα αφαιρεθεί από τα{' '}
+            {isInbox ? 'εισερχόμενά' : 'απεσταλμένα'} σου και δεν επανέρχεται.
+          </p>
+          <p style={{ marginTop: 'var(--space-3)' }}>
+            Ο άλλος χρήστης θα συνεχίσει να το βλέπει στον δικό του κατάλογο.
+          </p>
+        </Modal>
       )}
 
       {compose && (

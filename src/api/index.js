@@ -583,7 +583,7 @@ export async function getInbox(params = {}) {
     await delay()
     const me = requireUser()
     const items = mockMessages
-      .filter((m) => m.toUser.id === me.id)
+      .filter((m) => m.toUser.id === me.id && !m.deletedByReceiver)
       .sort((a, b) => b.sentAt.localeCompare(a.sentAt))
     return paginate(items, params.page, params.pageSize)
   }
@@ -596,7 +596,7 @@ export async function getOutbox(params = {}) {
     await delay()
     const me = requireUser()
     const items = mockMessages
-      .filter((m) => m.fromUser.id === me.id)
+      .filter((m) => m.fromUser.id === me.id && !m.deletedBySender)
       .sort((a, b) => b.sentAt.localeCompare(a.sentAt))
     return paginate(items, params.page, params.pageSize)
   }
@@ -609,7 +609,11 @@ export async function getUnreadCount() {
   if (USE_MOCK) {
     const me = getStoredUser()
     if (!me) return { count: 0 }
-    return { count: mockMessages.filter((m) => m.toUser.id === me.id && !m.read).length }
+    return {
+      count: mockMessages.filter(
+        (m) => m.toUser.id === me.id && !m.read && !m.deletedByReceiver,
+      ).length,
+    }
   }
   const { data } = await client.get('/messages/unread-count')
   return data
@@ -660,6 +664,11 @@ export async function getMessage(id) {
     if (message.toUser.id !== me.id && message.fromUser.id !== me.id) {
       throw apiError(403, 'FORBIDDEN', 'Δεν έχετε πρόσβαση σε αυτό το μήνυμα.')
     }
+    // Διαγραμμένο για αυτόν τον χρήστη = ανύπαρκτο για αυτόν (404, όχι 403).
+    const deletedForMe = (message.toUser.id === me.id && message.deletedByReceiver)
+      || (message.fromUser.id === me.id && message.deletedBySender)
+    if (deletedForMe) throw apiError(404, 'NOT_FOUND', 'Το μήνυμα δεν βρέθηκε.')
+
     if (message.toUser.id === me.id) message.read = true
     return structuredClone(message)
   }
@@ -667,12 +676,33 @@ export async function getMessage(id) {
   return data
 }
 
-/* ΔΕΝ υπάρχει deleteMessage().
-   Το `DELETE /messages/{id}` δεν υλοποιείται στο backend: η ίδια γραμμή
-   εξυπηρετεί inbox ΚΑΙ outbox, οπότε σκέτη διαγραφή θα έσβηνε το μήνυμα
-   και από τον άλλον χρήστη. Χρειάζεται deleted_by_sender/deleted_by_receiver
-   και migration 002. Μέχρι να συμφωνηθεί, η σελίδα μηνυμάτων δεν δείχνει
-   κουμπί διαγραφής — καλύτερα καθόλου, παρά κουμπί που γυρίζει 405. */
+/* Διαγραφή μηνύματος από τον κατάλογο του χρήστη (εκφώνηση §10).
+
+   Είναι soft delete ΑΝΑ ΧΡΗΣΤΗ: η ίδια γραμμή είναι το εισερχόμενο του ενός
+   και το απεσταλμένο του άλλου, οπότε κρύβεται μόνο η δική μας όψη — ο
+   συνομιλητής συνεχίζει να βλέπει το μήνυμα. Όταν το διαγράψουν και οι δύο,
+   ο server σβήνει τη γραμμή οριστικά. */
+export async function deleteMessage(id) {
+  if (USE_MOCK) {
+    await delay()
+    const me = requireUser()
+    const message = mockMessages.find((m) => m.id === Number(id))
+    if (!message) throw apiError(404, 'NOT_FOUND', 'Το μήνυμα δεν βρέθηκε.')
+    if (message.toUser.id !== me.id && message.fromUser.id !== me.id) {
+      throw apiError(403, 'FORBIDDEN', 'Δεν έχετε πρόσβαση σε αυτό το μήνυμα.')
+    }
+
+    // Ίδια σημασιολογία με τον server: σημειώνουμε ποια πλευρά το έκρυψε και
+    // σβήνουμε τη γραμμή μόνο όταν δεν τη βλέπει πια κανείς.
+    if (message.toUser.id === me.id) message.deletedByReceiver = true
+    if (message.fromUser.id === me.id) message.deletedBySender = true
+    if (message.deletedBySender && message.deletedByReceiver) {
+      mockMessages.splice(mockMessages.indexOf(message), 1)
+    }
+    return
+  }
+  await client.delete(`/messages/${id}`)
+}
 
 // ------------------------------------------------------------
 // RECOMMENDATIONS (εκφώνηση §13 · contract §2.6)

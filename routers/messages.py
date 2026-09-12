@@ -150,9 +150,14 @@ def inbox(
     db: Session = Depends(get_db),
     current_user: models.User = Depends(get_current_user),
 ):
-    """API_CONTRACT.md §2.5 — εισερχόμενα του χρήστη (paginated)."""
+    """API_CONTRACT.md §2.5 — εισερχόμενα του χρήστη (paginated).
+
+    Εξαιρούνται όσα ο ίδιος έχει διαγράψει από τα εισερχόμενά του (§10):
+    η γραμμή μένει στη βάση για τον αποστολέα, αλλά για αυτόν δεν υπάρχει.
+    """
     query = db.query(models.Message).filter(
-        models.Message.to_user_id == current_user.user_id
+        models.Message.to_user_id == current_user.user_id,
+        models.Message.deleted_by_receiver.is_(False),
     )
     return _paginate_messages(query, page, pageSize)
 
@@ -167,9 +172,11 @@ def outbox(
     """API_CONTRACT.md §2.5 — απεσταλμένα του χρήστη (paginated).
 
     Το path είναι /outbox όπως το ορίζει το συμβόλαιο (όχι /sent).
+    Εξαιρούνται όσα ο ίδιος έχει διαγράψει από τα απεσταλμένα του (§10).
     """
     query = db.query(models.Message).filter(
-        models.Message.from_user_id == current_user.user_id
+        models.Message.from_user_id == current_user.user_id,
+        models.Message.deleted_by_sender.is_(False),
     )
     return _paginate_messages(query, page, pageSize)
 
@@ -183,16 +190,29 @@ def unread_count(
 
     Το frontend το κάνει poll κάθε ~30s, γι' αυτό είναι σκέτο COUNT(*) και δεν
     φορτώνει καθόλου μηνύματα.
+
+    Τα διαγραμμένα δεν μετράνε: αλλιώς το badge θα έδειχνε «2 νέα» και ο
+    χρήστης θα άνοιγε άδεια εισερχόμενα χωρίς να μπορεί να το μηδενίσει.
     """
     count = (
         db.query(models.Message)
         .filter(
             models.Message.to_user_id == current_user.user_id,
             models.Message.is_read.is_(False),
+            models.Message.deleted_by_receiver.is_(False),
         )
         .count()
     )
     return schemas.UnreadCount(count=count)
+
+
+def _deleted_for(message: models.Message, user_id: int) -> bool:
+    """Το έχει διαγράψει ΑΥΤΟΣ ο χρήστης από τον δικό του κατάλογο; (§10)"""
+    if message.to_user_id == user_id and message.deleted_by_receiver:
+        return True
+    if message.from_user_id == user_id and message.deleted_by_sender:
+        return True
+    return False
 
 
 def _get_message_for_user(db: Session, message_id: int, current_user: models.User) -> models.Message:
@@ -212,6 +232,12 @@ def _get_message_for_user(db: Session, message_id: int, current_user: models.Use
             "FORBIDDEN",
             "Δεν έχετε πρόσβαση σε αυτό το μήνυμα.",
         )
+
+    # Διαγραμμένο για αυτόν τον χρήστη = ανύπαρκτο για αυτόν. Επιστρέφουμε 404
+    # και όχι 403: το 403 θα του έλεγε ότι το μήνυμα εξακολουθεί να υπάρχει.
+    if _deleted_for(message, current_user.user_id):
+        raise _error(status.HTTP_404_NOT_FOUND, "NOT_FOUND", "Το μήνυμα δεν βρέθηκε.")
+
     return message
 
 
@@ -266,12 +292,44 @@ def get_message(
     return schemas.MessageResponse.from_message(message)
 
 
-# =========================================================
-# TODO (Ανδρέας) — βλ. API_CONTRACT.md §2.5:
-#
-#   DELETE /{id}  → διαγραφή από inbox/outbox → 204
-#
-# ΘΕΛΕΙ ΑΠΟΦΑΣΗ ΠΡΩΤΑ: η ίδια γραμμή `messages` εξυπηρετεί και τις δύο πλευρές.
-# Σκέτο DELETE θα έσβηνε το μήνυμα και από τον άλλον χρήστη. Χρειάζονται δύο
-# στήλες soft-delete (deleted_by_sender / deleted_by_receiver) και migration.
-# =========================================================
+@router.delete("/{message_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_message(
+    message_id: int,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user),
+):
+    """Εκφώνηση §10 / API_CONTRACT.md §2.5 — διαγραφή από inbox ή outbox.
+
+    Είναι soft delete ΑΝΑ ΧΡΗΣΤΗ (migration 002): η ίδια γραμμή είναι το
+    εισερχόμενο του ενός και το απεσταλμένο του άλλου, οπότε σκέτο DELETE θα
+    έσβηνε το μήνυμα και από τον συνομιλητή. Ο καθένας κρύβει μόνο τη δική
+    του όψη.
+
+    Ποια σημαία πέφτει εξαρτάται από τον ρόλο του χρήστη σε ΑΥΤΟ το μήνυμα.
+    Αν είναι και τα δύο (μήνυμα στον εαυτό του) δεν γίνεται — το POST το
+    απαγορεύει ρητά.
+
+    Όταν το έχουν κρύψει και οι δύο πλευρές, η γραμμή δεν είναι ορατή σε
+    κανέναν: τη διαγράφουμε οριστικά αντί να μένει για πάντα στη βάση.
+
+    Idempotent: δεύτερη κλήση βρίσκει το μήνυμα ήδη διαγραμμένο για τον
+    χρήστη, οπότε το _get_message_for_user γυρίζει 404.
+    """
+    message = _get_message_for_user(db, message_id, current_user)
+
+    if message.to_user_id == current_user.user_id:
+        message.deleted_by_receiver = True
+    if message.from_user_id == current_user.user_id:
+        message.deleted_by_sender = True
+
+    if message.deleted_by_sender and message.deleted_by_receiver:
+        db.delete(message)
+
+    try:
+        db.commit()
+    except Exception:
+        db.rollback()
+        raise
+
+    # 204 No Content — χωρίς σώμα, όπως ορίζει το συμβόλαιο.
+    return None

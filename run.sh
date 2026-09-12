@@ -24,6 +24,10 @@ fi
 # (π.χ. το μήνυμα του seed_admin στο main.py). Το UTF-8 το λύνει παντού.
 export PYTHONIOENCODING=utf-8
 
+# ΣΗΜΕΙΩΣΗ: το --reload παρακολουθεί ΟΛΟΝ τον φάκελο, μαζί με το .venv. Άρα
+# ένα `pip install` πυροδοτεί restart. Δεν το περιορίζουμε με --reload-exclude
+# γιατί το Git Bash επεκτείνει τα glob patterns πριν φτάσουν στο uvicorn και ο
+# server δεν ξεκινά καθόλου. Αν εγκαταστήσεις πακέτο, ξαναξεκίνα με το χέρι.
 exec "$PYTHON" -m uvicorn main:app \
   --host 0.0.0.0 \
   --port 8000 \

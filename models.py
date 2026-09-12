@@ -138,5 +138,11 @@ class Message(Base):
     to_user_id = Column(Integer, ForeignKey("users.user_id", ondelete="CASCADE"), nullable=False)
     fk_event_id = Column(Integer, ForeignKey("events.events_id", ondelete="CASCADE"), nullable=False)
 
+    # Διαγραφή ανά χρήστη (εκφώνηση §10, migration 002). Η ίδια γραμμή είναι
+    # το εισερχόμενο του ενός και το απεσταλμένο του άλλου, οπότε ο καθένας
+    # κρύβει το μήνυμα μόνο από τον δικό του κατάλογο.
+    deleted_by_sender = Column(Boolean, default=False, nullable=False)
+    deleted_by_receiver = Column(Boolean, default=False, nullable=False)
+
     sender = relationship("User", foreign_keys=[from_user_id], back_populates="messages_sent")
     receiver = relationship("User", foreign_keys=[to_user_id], back_populates="messages_received")
