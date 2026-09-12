@@ -8,10 +8,22 @@
   align-items: center;
 }
 
+/* Για τον συνδεδεμένο χρήστη το hero είναι επικεφαλίδα, όχι landing:
+   δεν πιάνει όλη την οθόνη ώστε να φαίνονται από κάτω οι προτάσεις (§13). */
+.welcome--compact {
+  min-height: 0;
+}
+
 .welcome__inner {
   max-width: 760px;
   padding-block: var(--space-10);
   text-align: center;
+}
+
+.welcome__inner--start {
+  max-width: none;
+  padding-block: var(--space-8);
+  text-align: left;
 }
 
 .welcome__eyebrow {
@@ -27,6 +39,10 @@
   font-size: clamp(2rem, 5vw, var(--text-3xl));
   margin-bottom: var(--space-5);
 }
+.welcome__title--sm {
+  font-size: clamp(1.75rem, 4vw, var(--text-2xl));
+  margin-bottom: var(--space-3);
+}
 .welcome__accent { color: var(--color-primary); }
 
 .welcome__lead {
@@ -35,6 +51,7 @@
   max-width: 56ch;
   margin: 0 auto var(--space-6);
 }
+.welcome__lead--start { margin-inline: 0; }
 
 .welcome__cta {
   display: flex;
@@ -42,6 +59,10 @@
   justify-content: center;
   flex-wrap: wrap;
   margin-bottom: var(--space-5);
+}
+.welcome__cta--start {
+  justify-content: flex-start;
+  margin-bottom: 0;
 }
 
 .welcome__note {

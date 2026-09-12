@@ -1,0 +1,47 @@
+/* ============================================================
+   Recommendations — τμήμα προτεινόμενων εκδηλώσεων (εκφώνηση §13).
+   Ίδιο grid με τη λίστα αναζήτησης, ώστε οι κάρτες να διαβάζονται
+   ως το ίδιο πράγμα· ξεχωρίζει μόνο από την επικεφαλίδα.
+   ============================================================ */
+
+.recs {
+  margin-bottom: var(--space-8);
+}
+
+.recs__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-bottom: var(--space-5);
+  padding-bottom: var(--space-3);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.recs__title {
+  font-family: var(--font-display);
+  font-size: var(--text-2xl);
+  color: var(--color-ink);
+  margin: 0;
+}
+
+/* Το «γιατί» της πρότασης — αλλάζει ανάλογα με το strategy. */
+.recs__hint {
+  font-size: var(--text-sm);
+  color: var(--color-ink-soft);
+  margin: var(--space-1) 0 0;
+  max-width: 60ch;
+}
+
+.recs__more {
+  font-size: var(--text-sm);
+  color: var(--color-primary);
+  white-space: nowrap;
+}
+
+.recs__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+  gap: var(--space-5);
+}

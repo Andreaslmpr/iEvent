@@ -11,6 +11,7 @@ import { useSearchParams } from 'react-router-dom'
 import { getEvents } from '../../api/index.js'
 import EventCard from '../../components/events/EventCard.jsx'
 import EventFilters from '../../components/events/EventFilters.jsx'
+import Recommendations from '../../components/events/Recommendations.jsx'
 import Pagination from '../../components/ui/Pagination.jsx'
 import Loader from '../../components/ui/Loader.jsx'
 import EmptyState from '../../components/ui/EmptyState.jsx'
@@ -63,8 +64,14 @@ export default function EventsList() {
 
   const items = result?.items ?? []
 
+  // Οι προτάσεις έχουν νόημα όσο ο χρήστης απλώς περιηγείται. Μόλις ψάξει
+  // κάτι συγκεκριμένο, δεν του κόβουμε τα αποτελέσματα με άσχετες κάρτες.
+  const isBrowsing = Object.keys(query).filter((k) => k !== 'page').length === 0
+
   return (
     <div className="container page">
+      {isBrowsing && <Recommendations limit={3} />}
+
       <header className="page__head">
         <h1>Εκδηλώσεις</h1>
         {result && !loading && (

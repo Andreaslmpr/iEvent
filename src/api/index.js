@@ -673,3 +673,60 @@ export async function getMessage(id) {
    και από τον άλλον χρήστη. Χρειάζεται deleted_by_sender/deleted_by_receiver
    και migration 002. Μέχρι να συμφωνηθεί, η σελίδα μηνυμάτων δεν δείχνει
    κουμπί διαγραφής — καλύτερα καθόλου, παρά κουμπί που γυρίζει 405. */
+
+// ------------------------------------------------------------
+// RECOMMENDATIONS (εκφώνηση §13 · contract §2.6)
+// ------------------------------------------------------------
+
+/* Προτεινόμενες εκδηλώσεις για τον συνδεδεμένο χρήστη.
+
+   Η απάντηση είναι κανονική σελίδα (items/page/pageSize/total/totalPages)
+   ΣΥΝ το πεδίο `strategy`:
+     - "matrix_factorization" → ο χρήστης έχει ιστορικό κρατήσεων
+     - "cold_start_visits"    → χωρίς κρατήσεις· μόνο από τις επισκέψεις του
+   Το `strategy` καθορίζει τον τίτλο που δείχνουμε (εκφώνηση §13).
+
+   ΠΡΟΣΟΧΗ: pageSize 1–50 εδώ (default 10) — όχι 1–100 όπως αλλού.
+
+   Ο server αποκλείει ήδη: εκδηλώσεις που ο χρήστης έχει δει ή κρατήσει,
+   τις δικές του ως διοργανωτή, όσες έχουν περάσει, και ό,τι δεν είναι
+   PUBLISHED. Άρα μηδέν αποτελέσματα είναι απολύτως φυσιολογική απάντηση. */
+export async function getRecommendations(params = {}) {
+  if (USE_MOCK) {
+    await delay()
+    const me = requireUser()
+
+    // Το mock δεν τρέχει Biased MF — μιμείται μόνο τη ΣΥΜΠΕΡΙΦΟΡΑ του
+    // endpoint (σχήμα, strategy, αποκλεισμοί), ώστε το UI να δοκιμάζεται
+    // ρεαλιστικά. Η πραγματική παραγοντοποίηση ζει στον server (§13).
+    const myBookings = mockBookings.filter((b) => b.attendee.id === me.id)
+    const strategy = myBookings.length > 0 ? 'matrix_factorization' : 'cold_start_visits'
+
+    // Οι κατηγορίες που ο χρήστης έχει ήδη δείξει ότι τον ενδιαφέρουν.
+    const seenEventIds = new Set(myBookings.map((b) => b.eventId))
+    const likedCategories = new Set(
+      mockEvents
+        .filter((e) => seenEventIds.has(e.id))
+        .flatMap((e) => e.categories),
+    )
+
+    const now = new Date()
+    const candidates = mockEvents.filter((e) => (
+      e.status === 'PUBLISHED'
+      && e.organizer.id !== me.id
+      && !seenEventIds.has(e.id)
+      && new Date(e.startDateTime) >= now
+    ))
+
+    // Κατάταξη: πρώτα όσες μοιράζονται κατηγορία με το ιστορικό του χρήστη.
+    const scored = candidates
+      .map((e) => ({ e, score: e.categories.filter((c) => likedCategories.has(c)).length }))
+      .sort((a, b) => b.score - a.score || a.e.startDateTime.localeCompare(b.e.startDateTime))
+      .map(({ e }) => structuredClone(e))
+
+    const pageSize = Math.min(Number(params.pageSize) || 10, 50)
+    return { ...paginate(scored, params.page, pageSize), strategy }
+  }
+  const { data } = await client.get('/recommendations', { params })
+  return data
+}
