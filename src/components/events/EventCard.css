@@ -10,8 +10,8 @@
   color: inherit;
 }
 
-/* Διακοσμητική «κεφαλίδα» — τα media είναι ονόματα αρχείων του server,
-   οπότε στη φάση mock δείχνουμε τον τύπο εκδήλωσης πάνω σε ντεγκραντέ. */
+/* «Κεφαλίδα» της κάρτας: η πρώτη φωτογραφία της εκδήλωσης, ή — αν δεν
+   έχει φωτογραφίες — ο τύπος εκδήλωσης πάνω σε ντεγκραντέ. */
 .event-card__thumb {
   height: 108px;
   display: flex;
@@ -23,6 +23,14 @@
   text-transform: uppercase;
   letter-spacing: 0.1em;
   font-weight: var(--weight-medium);
+}
+
+.event-card__thumb--photo {
+  display: block;
+  width: 100%;
+  padding: 0;
+  object-fit: cover;
+  background: var(--color-surface-2);
 }
 
 .event-card__body {

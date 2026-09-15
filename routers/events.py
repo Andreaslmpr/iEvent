@@ -2,7 +2,7 @@ from datetime import datetime
 from decimal import Decimal
 from typing import Literal, Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile, status
 from sqlalchemy import and_, func, or_, select
 from sqlalchemy.orm import Session, joinedload, selectinload
 
@@ -10,6 +10,7 @@ import models
 import schemas
 from database import get_db
 from security import get_current_user, get_current_user_optional
+from services import media
 
 router = APIRouter(
     prefix="/api/events",
@@ -122,8 +123,9 @@ def create_event(
             )
         )
 
-    for filename in payload.media:
-        event.media.append(models.EventMedia(filename=filename))
+    # Το `payload.media` αγνοείται σκόπιμα: μια νέα εκδήλωση δεν έχει ακόμη
+    # ανεβασμένες φωτογραφίες. Ανεβαίνουν μετά, με POST /api/events/{id}/media —
+    # αλλιώς κάποιος θα μπορούσε να «δηλώσει» όνομα αρχείου άλλης εκδήλωσης.
 
     event.categories = _resolve_categories(db, payload.categories)
 
@@ -411,27 +413,41 @@ def delete_event(
     db: Session = Depends(get_db),
     current_user: models.User = Depends(get_current_user),
 ):
-    """API_CONTRACT.md §2.3 — διαγραφή μόνο αν DRAFT ΚΑΙ καμία κράτηση.
+    """Εκφώνηση §7γ — διαγραφή πριν από τη δημοσίευση ή, το αργότερο, πριν από
+    την υποβολή της πρώτης κράτησης.
 
-    Είναι ο ίδιος κανόνας με το `isDeletable` του Event DTO. Το frontend ήδη
-    κρύβει το κουμπί, αλλά ο έλεγχος πρέπει να υπάρχει και εδώ: το frontend
-    δείχνει, ο server αποφασίζει.
+    Ο κανόνας είναι το `models.Event.is_deletable` — το ίδιο που τροφοδοτεί το
+    `isDeletable` του DTO. Το frontend κρύβει το κουμπί, αλλά ο έλεγχος πρέπει να
+    υπάρχει και εδώ: το frontend δείχνει, ο server αποφασίζει.
     """
+    # Το lock=True έχει εδώ ουσία: χωρίς αυτό, μια κράτηση που φτάνει ταυτόχρονα
+    # θα μπορούσε να γραφτεί ανάμεσα στον έλεγχο «καμία κράτηση» και στη διαγραφή.
     event = _get_owned_event(db, event_id, current_user, lock=True)
 
-    if event.status != "DRAFT" or len(event.bookings) > 0:
+    if not event.is_deletable:
+        reason = (
+            "η ακυρωμένη εκδήλωση διατηρείται για λόγους ιστορικότητας"
+            if event.status == "CANCELLED"
+            else "υπάρχουν ήδη κρατήσεις — χρησιμοποιήστε την ακύρωση"
+        )
         raise _error(
             status.HTTP_409_CONFLICT,
             "DELETE_NOT_ALLOWED",
-            "Διαγράφονται μόνο εκδηλώσεις σε κατάσταση DRAFT χωρίς καμία κράτηση. "
-            "Για δημοσιευμένη εκδήλωση χρησιμοποίησε την ακύρωση.",
+            f"Η εκδήλωση δεν μπορεί να διαγραφεί: {reason}.",
         )
+
+    photo_files = [item.filename for item in event.media]
 
     # Τα ticket_types / media / visits φεύγουν με cascade (βλ. models.py),
     # όπως και οι γραμμές του event_has_categories — οι ίδιες οι κατηγορίες
     # παραμένουν, γιατί τις μοιράζονται και άλλες εκδηλώσεις.
     db.delete(event)
     db.commit()
+
+    # Τα αρχεία σβήνονται ΜΕΤΑ το επιτυχές commit: αν η βάση αποτύγχανε, δεν
+    # θέλουμε εκδήλωση που υπάρχει ακόμη αλλά έχει χάσει τις φωτογραφίες της.
+    for filename in photo_files:
+        media.delete_file(filename)
     return None
 
 
@@ -544,14 +560,97 @@ def update_event(
 
     event.categories = _resolve_categories(db, payload.categories)
 
-    event.media.clear()
-    for filename in payload.media:
-        event.media.append(models.EventMedia(filename=filename))
+    # Φωτογραφίες: το PUT μπορεί μόνο να ΑΦΑΙΡΕΣΕΙ. Ό,τι λείπει από τη λίστα
+    # σβήνεται· ονόματα που δεν ανήκουν ήδη στην εκδήλωση αγνοούνται, ώστε να μη
+    # μπορεί κανείς να «δανειστεί» το αρχείο άλλης εκδήλωσης. Νέες φωτογραφίες
+    # ανεβαίνουν μόνο με POST /api/events/{id}/media.
+    keep = set(payload.media)
+    removed_files = []
+    for item in list(event.media):
+        if item.filename not in keep:
+            removed_files.append(item.filename)
+            event.media.remove(item)  # delete-orphan → DELETE
 
     try:
         db.commit()
     except Exception:
         db.rollback()
+        raise
+
+    for filename in removed_files:
+        media.delete_file(filename)
+
+    db.refresh(event)
+    return schemas.EventResponse.from_event(event)
+
+
+@router.post(
+    "/{event_id}/media",
+    response_model=schemas.EventResponse,
+    status_code=status.HTTP_201_CREATED,
+)
+def upload_event_media(
+    event_id: int,
+    files: list[UploadFile] = File(...),
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user),
+):
+    """Εκφώνηση §7α — ανέβασμα φωτογραφιών εκδήλωσης (owner only).
+
+    multipart/form-data με ένα ή περισσότερα πεδία `files`. Όλα ή τίποτα: αν μία
+    φωτογραφία είναι άκυρη, δεν αποθηκεύεται καμία.
+    """
+    event = _get_owned_event(db, event_id, current_user)
+
+    if event.status not in ("DRAFT", "PUBLISHED"):
+        raise _error(
+            status.HTTP_409_CONFLICT,
+            "EVENT_NOT_ACTIVE",
+            f"Δεν προστίθενται φωτογραφίες σε εκδήλωση σε κατάσταση {event.status}.",
+        )
+
+    if len(event.media) + len(files) > media.MAX_PHOTOS_PER_EVENT:
+        raise _error(
+            status.HTTP_400_BAD_REQUEST,
+            "VALIDATION_ERROR",
+            f"Μέχρι {media.MAX_PHOTOS_PER_EVENT} φωτογραφίες ανά εκδήλωση "
+            f"(υπάρχουν ήδη {len(event.media)}).",
+        )
+
+    # --- 1. Έλεγχος ΟΛΩΝ πριν γραφτεί οτιδήποτε ---------------------------
+    contents = []
+    for upload in files:
+        # Διαβάζουμε ένα byte παραπάνω από το όριο: έτσι καταλαβαίνουμε ότι το
+        # αρχείο το ξεπερνά χωρίς να φορτώσουμε ολόκληρο ένα τεράστιο αρχείο.
+        data = upload.file.read(media.MAX_PHOTO_BYTES + 1)
+        if len(data) > media.MAX_PHOTO_BYTES:
+            raise _error(
+                status.HTTP_400_BAD_REQUEST,
+                "VALIDATION_ERROR",
+                f"Η φωτογραφία «{upload.filename}» ξεπερνά τα 5 MB.",
+            )
+        if media.detect_image_type(data[:12]) is None:
+            raise _error(
+                status.HTTP_400_BAD_REQUEST,
+                "VALIDATION_ERROR",
+                f"Το «{upload.filename}» δεν είναι εικόνα JPEG, PNG, GIF ή WebP.",
+            )
+        contents.append(data)
+
+    # --- 2. Αποθήκευση ------------------------------------------------------
+    saved = []
+    try:
+        for data in contents:
+            filename = media.save_image(data)
+            saved.append(filename)
+            event.media.append(models.EventMedia(filename=filename))
+        db.commit()
+    except Exception:
+        db.rollback()
+        # Η βάση γύρισε πίσω — τα αρχεία που πρόλαβαν να γραφτούν δεν πρέπει να
+        # μείνουν ορφανά στον δίσκο.
+        for filename in saved:
+            media.delete_file(filename)
         raise
 
     db.refresh(event)

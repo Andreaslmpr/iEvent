@@ -140,6 +140,57 @@
   box-shadow: 0 0 0 3px var(--color-primary-soft);
 }
 
+/* --- Φωτογραφίες (εκφώνηση §7α) --- */
+.eform__hint--lead { margin-top: 0; margin-bottom: var(--space-4); }
+
+.photos {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 var(--space-4);
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: var(--space-3);
+}
+
+.photo { position: relative; }
+
+.photo__img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-2);
+}
+.photo--new .photo__img { border-color: var(--color-primary); }
+
+.photo__badge {
+  position: absolute;
+  left: var(--space-2);
+  bottom: var(--space-2);
+  padding: 0 var(--space-2);
+  border-radius: var(--radius-full);
+  background: var(--color-primary);
+  color: var(--color-surface);
+  font-size: var(--text-xs);
+}
+
+.photo__remove {
+  position: absolute;
+  top: var(--space-1);
+  right: var(--space-1);
+  width: var(--space-6);
+  height: var(--space-6);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-full);
+  background: var(--color-surface);
+  color: var(--color-ink-soft);
+  font-size: var(--text-xs);
+  line-height: 1;
+}
+.photo__remove:hover { color: var(--color-danger); border-color: var(--color-danger); }
+
 @media (max-width: 620px) {
   .tickets__head { display: none; }
   .ticket-row { grid-template-columns: 1fr 1fr; }

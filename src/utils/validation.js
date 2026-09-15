@@ -50,6 +50,22 @@ export function validateAfm(v) {
   return ''
 }
 
+/* Γεωγραφικές συντεταγμένες (εκφώνηση §2: υποχρεωτικές στην εγγραφή).
+   Δεχόμαστε και κόμμα ως υποδιαστολή, όπως το πληκτρολογεί ένας Έλληνας χρήστης. */
+export const parseCoordinate = (v) => Number(String(v).trim().replace(',', '.'))
+
+function validateCoordinate(v, min, max, label) {
+  if (isBlank(v)) return `${label} είναι υποχρεωτικό.`
+  const n = parseCoordinate(v)
+  if (!Number.isFinite(n) || n < min || n > max) {
+    return `${label} πρέπει να είναι αριθμός από ${min} έως ${max}.`
+  }
+  return ''
+}
+
+export const validateLatitude = (v) => validateCoordinate(v, -90, 90, 'Το γεωγραφικό πλάτος')
+export const validateLongitude = (v) => validateCoordinate(v, -180, 180, 'Το γεωγραφικό μήκος')
+
 /* Τρέχει ένα αντικείμενο validators πάνω σε values και επιστρέφει
    { errors, isValid }. */
 export function runValidators(values, validators) {

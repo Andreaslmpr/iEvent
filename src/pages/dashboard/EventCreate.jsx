@@ -4,7 +4,7 @@
    ============================================================ */
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { createEvent } from '../../api/index.js'
+import { createEvent, uploadEventMedia } from '../../api/index.js'
 import EventForm from '../../components/events/EventForm.jsx'
 import { errorMessage } from '../../utils/format.js'
 import '../events/events-pages.css'
@@ -15,14 +15,24 @@ export default function EventCreate() {
   const [submitting, setSubmitting] = useState(false)
   const [serverError, setServerError] = useState('')
 
-  async function handleSubmit(payload) {
+  async function handleSubmit(payload, photos) {
     setSubmitting(true)
     setServerError('')
     try {
       const event = await createEvent(payload)
-      navigate('/dashboard', {
-        state: { notice: `Η εκδήλωση «${event.title}» αποθηκεύτηκε ως πρόχειρη.` },
-      })
+      let notice = `Η εκδήλωση «${event.title}» αποθηκεύτηκε ως πρόχειρη.`
+
+      // Οι φωτογραφίες ανεβαίνουν αφού υπάρξει η εκδήλωση (χρειάζονται το id).
+      if (photos.length > 0) {
+        try {
+          await uploadEventMedia(event.id, photos)
+        } catch (err) {
+          // Η εκδήλωση έχει ΗΔΗ δημιουργηθεί: δεν μένουμε στη φόρμα, γιατί νέα
+          // υποβολή θα έφτιαχνε δεύτερη ίδια εκδήλωση.
+          notice += ` Οι φωτογραφίες όμως δεν ανέβηκαν (${errorMessage(err)}) — προσθέστε τες από την επεξεργασία.`
+        }
+      }
+      navigate('/dashboard', { state: { notice } })
     } catch (err) {
       setServerError(errorMessage(err, 'Η εκδήλωση δεν αποθηκεύτηκε.'))
     } finally {

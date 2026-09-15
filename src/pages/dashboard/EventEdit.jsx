@@ -4,7 +4,7 @@
    ============================================================ */
 import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
-import { getEvent, updateEvent } from '../../api/index.js'
+import { getEvent, updateEvent, uploadEventMedia } from '../../api/index.js'
 import { useAuth } from '../../context/AuthContext.jsx'
 import EventForm from '../../components/events/EventForm.jsx'
 import Loader from '../../components/ui/Loader.jsx'
@@ -41,11 +41,14 @@ export default function EventEdit() {
     return () => { cancelled = true }
   }, [id, user.id])
 
-  async function handleSubmit(payload) {
+  async function handleSubmit(payload, photos) {
     setSubmitting(true)
     setServerError('')
     try {
       const updated = await updateEvent(id, payload)
+      // Αν αποτύχει το ανέβασμα, μένουμε στη φόρμα με το σφάλμα: η νέα υποβολή
+      // ξαναστέλνει το ίδιο PUT (ακίνδυνο) και ξαναδοκιμάζει τις φωτογραφίες.
+      if (photos.length > 0) await uploadEventMedia(id, photos)
       navigate('/dashboard', {
         state: { notice: `Οι αλλαγές στην «${updated.title}» αποθηκεύτηκαν.` },
       })

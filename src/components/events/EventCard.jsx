@@ -4,6 +4,7 @@
    τίτλος, πότε, πού, κατηγορίες, από πόσο και αν έχει θέσεις.
    ============================================================ */
 import { Link } from 'react-router-dom'
+import { mediaUrl } from '../../api/index.js'
 import { formatDateTime, formatMoney, minPrice, totalAvailable } from '../../utils/format.js'
 import './EventCard.css'
 
@@ -13,7 +14,15 @@ export default function EventCard({ event }) {
 
   return (
     <Link to={`/events/${event.id}`} className="card event-card">
-      <div className="event-card__thumb">{event.eventType}</div>
+      {/* Εξώφυλλο: η πρώτη φωτογραφία, αλλιώς ο τύπος εκδήλωσης σε ντεγκραντέ. */}
+      {event.media?.length > 0 ? (
+        <img
+          src={mediaUrl(event.media[0])} alt="" loading="lazy"
+          className="event-card__thumb event-card__thumb--photo"
+        />
+      ) : (
+        <div className="event-card__thumb">{event.eventType}</div>
+      )}
 
       <div className="event-card__body">
         <h3 className="event-card__title">{event.title}</h3>

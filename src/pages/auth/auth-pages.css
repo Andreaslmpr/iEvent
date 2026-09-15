@@ -72,3 +72,16 @@
   from { opacity: 0; transform: translateY(8px); }
   to   { opacity: 1; transform: translateY(0); }
 }
+
+/* --- Γεωγραφική θέση στην εγγραφή (εκφώνηση §2) --- */
+.auth-form__geo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
+}
+
+.auth-form__hint {
+  font-size: var(--text-xs);
+  color: var(--color-ink-soft);
+}

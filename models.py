@@ -66,6 +66,20 @@ class Event(Base):
     visits = relationship("EventVisit", back_populates="event", cascade="all, delete-orphan")
     categories = relationship("EventCategory", secondary=event_has_categories, back_populates="events")
 
+    @property
+    def is_deletable(self) -> bool:
+        """Εκφώνηση §7γ: «Η διαγραφή επιτρέπεται μόνο πριν από τη δημοσίευση της
+        εκδήλωσης ή, το αργότερο, πριν από την υποβολή της πρώτης κράτησης.»
+
+        Άρα διαγράφεται μια DRAFT, αλλά ΚΑΙ μια PUBLISHED που δεν έχει ακόμη καμία
+        κράτηση. Η CANCELLED όχι: η ακύρωση ορίζεται ρητά ως αλλαγή κατάστασης
+        «χωρίς διαγραφή των αποθηκευμένων δεδομένων».
+
+        Ο κανόνας ζει σε ΕΝΑ σημείο, ώστε το `isDeletable` του DTO και ο έλεγχος
+        του DELETE /api/events/{id} να μην μπορούν να αποκλίνουν.
+        """
+        return self.status in ("DRAFT", "PUBLISHED") and len(self.bookings) == 0
+
 class EventCategory(Base):
     __tablename__ = "event_categories"
 

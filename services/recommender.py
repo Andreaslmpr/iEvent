@@ -50,21 +50,41 @@ class BiasedMF:
     lr        : ρυθμός μάθησης (learning rate, η).
     reg       : συντελεστής κανονικοποίησης (λ).
     seed      : για αναπαραγώγιμα αποτελέσματα — ίδια δεδομένα, ίδιες προτάσεις.
+    negative_ratio : αρνητικά δείγματα ανά θετική παρατήρηση, σε κάθε εποχή.
+
+    Γιατί αρνητικά δείγματα
+    -----------------------
+    Στην εφαρμογή ΟΛΕΣ οι παρατηρήσεις είναι θετικές (επίσκεψη, κράτηση): δεν
+    υπάρχει «δεν μου αρέσει». Ένα μοντέλο παλινδρόμησης που βλέπει μόνο «του
+    άρεσε» μαθαίνει να προβλέπει «του αρέσει» για τα πάντα, άρα δεν μπορεί να
+    ξεχωρίσει ποιες ΑΓΝΩΣΤΕΣ εκδηλώσεις ταιριάζουν στον χρήστη. Γι' αυτό, σε
+    κάθε εποχή, για τυχαίες θετικές παρατηρήσεις κρατάμε τον χρήστη και
+    διαλέγουμε τυχαία μια εκδήλωση που ΔΕΝ έχει δει, με στόχο βαθμολογία 0: μια
+    αθέατη εκδήλωση είναι ασθενής ένδειξη αδιαφορίας. Τα δείγματα αλλάζουν σε
+    κάθε εποχή, ώστε καμία συγκεκριμένη αθέατη εκδήλωση να μην «τιμωρείται»
+    μόνιμα.
     """
 
     def __init__(
         self,
         n_factors: int = 8,
-        n_epochs: int = 60,
+        # Οι προεπιλογές προέκυψαν από αξιολόγηση (services/evaluate_recommender.py).
+        # Με τις αρχικές 60 εποχές το μοντέλο έκανε overfitting στο dataset του
+        # e-class — χειρότερο RMSE ακόμη και από τον σκέτο μέσο όρο. Τα αρνητικά
+        # δείγματα είναι απαραίτητα για να κατατάσσονται ΑΘΕΑΤΕΣ εκδηλώσεις, που
+        # είναι ακριβώς οι υποψήφιες προτάσεις της εφαρμογής.
+        n_epochs: int = 20,
         lr: float = 0.01,
-        reg: float = 0.05,
+        reg: float = 0.1,
         seed: int = 42,
+        negative_ratio: float = 1.0,
     ) -> None:
         self.n_factors = n_factors
         self.n_epochs = n_epochs
         self.lr = lr
         self.reg = reg
         self.seed = seed
+        self.negative_ratio = negative_ratio
 
     # -----------------------------------------------------------------
     def fit(self, ratings: pd.DataFrame) -> "BiasedMF":
@@ -82,7 +102,13 @@ class BiasedMF:
         i_idx = ratings["item_id"].map(self.item_index_).to_numpy()
         r = ratings["rating"].to_numpy(dtype=float)
 
-        self.mu_ = float(r.mean())
+        # Όσα ζεύγη έχουν ήδη παρατηρηθεί — δεν επιτρέπεται να γίνουν αρνητικά.
+        observed = set(zip(u_idx.tolist(), i_idx.tolist()))
+        n_negatives = int(round(len(r) * self.negative_ratio))
+
+        # μ = μέσος όρος των ΣΤΟΧΩΝ της εκπαίδευσης, μαζί με τα αρνητικά (0).
+        # Χωρίς αρνητικά δείγματα είναι απλώς ο μέσος όρος των βαθμολογιών.
+        self.mu_ = float(r.sum() / (len(r) + n_negatives))
 
         rng = np.random.default_rng(self.seed)
         # Οι προκαταλήψεις ξεκινούν στο μηδέν: «κανείς δεν διαφέρει από τον μέσο
@@ -95,17 +121,32 @@ class BiasedMF:
         self.P_ = rng.normal(0.0, 0.1, (n_users, self.n_factors))
         self.Q_ = rng.normal(0.0, 0.1, (n_items, self.n_factors))
 
-        order = np.arange(len(r))
         self.history_ = []
 
         for _ in range(self.n_epochs):
+            users, items, targets = u_idx, i_idx, r
+            if n_negatives:
+                # Ο χρήστης κάθε αρνητικού δείγματος προέρχεται από τυχαία θετική
+                # παρατήρηση, ώστε οι ενεργοί χρήστες να παίρνουν αναλογικά
+                # περισσότερα αρνητικά. Η εκδήλωση επιλέγεται τυχαία.
+                picked = rng.integers(0, len(r), n_negatives)
+                neg_users = u_idx[picked]
+                neg_items = rng.integers(0, n_items, n_negatives)
+                unseen = np.fromiter(
+                    ((a, b) not in observed for a, b in zip(neg_users.tolist(), neg_items.tolist())),
+                    dtype=bool, count=n_negatives,
+                )
+                users = np.concatenate([u_idx, neg_users[unseen]])
+                items = np.concatenate([i_idx, neg_items[unseen]])
+                targets = np.concatenate([r, np.zeros(int(unseen.sum()))])
+
             # Ανακάτεμα σε κάθε εποχή: η σταθερή σειρά εισάγει συστηματική
             # μεροληψία στο SGD.
-            rng.shuffle(order)
+            order = rng.permutation(len(targets))
             squared_error = 0.0
 
             for k in order:
-                u, i = u_idx[k], i_idx[k]
+                u, i = users[k], items[k]
 
                 prediction = (
                     self.mu_
@@ -113,7 +154,7 @@ class BiasedMF:
                     + self.b_i_[i]
                     + float(self.P_[u] @ self.Q_[i])
                 )
-                error = r[k] - prediction
+                error = targets[k] - prediction
                 squared_error += error * error
 
                 # Ενημέρωση προκαταλήψεων
@@ -128,7 +169,7 @@ class BiasedMF:
                 self.P_[u] += self.lr * (error * self.Q_[i] - self.reg * p_u)
                 self.Q_[i] += self.lr * (error * p_u - self.reg * self.Q_[i])
 
-            self.history_.append(float(np.sqrt(squared_error / len(r))))
+            self.history_.append(float(np.sqrt(squared_error / len(targets))))
 
         self.train_rmse_ = self.history_[-1]
         return self

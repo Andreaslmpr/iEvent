@@ -4,9 +4,11 @@
    οπότε εδώ βλέπει ΟΛΕΣ τις δικές του (και τις πρόχειρες).
 
    Ενέργειες ανά κατάσταση:
-     DRAFT     → επεξεργασία, δημοσίευση, διαγραφή (αν δεν έχει κρατήσεις)
-     PUBLISHED → επεξεργασία, ακύρωση, προβολή κρατήσεων
-     CANCELLED → μόνο προβολή
+     DRAFT     → επεξεργασία, δημοσίευση, διαγραφή
+     PUBLISHED → επεξεργασία, ακύρωση, προβολή κρατήσεων,
+                 διαγραφή ΜΟΝΟ πριν από την πρώτη κράτηση (εκφώνηση §7γ)
+     CANCELLED → μόνο προβολή (τα δεδομένα διατηρούνται)
+   Το αν επιτρέπεται η διαγραφή το αποφασίζει ο server (`isDeletable`).
    ============================================================ */
 import { useEffect, useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
@@ -170,7 +172,7 @@ export default function Dashboard() {
                       </button>
                     )}
 
-                    {isDraft && event.isDeletable && (
+                    {event.isDeletable && (
                       <button className="btn btn--danger" onClick={() => ask('delete', event)}>
                         Διαγραφή
                       </button>

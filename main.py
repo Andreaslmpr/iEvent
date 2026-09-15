@@ -13,11 +13,13 @@ from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from fastapi.staticfiles import StaticFiles
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from database import engine, SessionLocal
 import models
 from security import get_password_hash
+from services.media import MEDIA_DIR
 
 # Κάνουμε import τα routers από τον φάκελο routers
 from routers import auth, admin, events, bookings, messages, recommendations
@@ -161,3 +163,7 @@ app.include_router(events.router)
 app.include_router(bookings.router)
 app.include_router(messages.router)
 app.include_router(recommendations.router)
+
+# Φωτογραφίες εκδηλώσεων (εκφώνηση §7α): {Base}/media/{filename}, όπως ορίζει το
+# API_CONTRACT.md §1. Δημόσιες, αφού και ο επισκέπτης βλέπει τη σελίδα εκδήλωσης.
+app.mount("/api/media", StaticFiles(directory=MEDIA_DIR), name="media")

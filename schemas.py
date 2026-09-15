@@ -39,6 +39,13 @@ class GeoLocation(BaseModel):
     lat: float
     lng: float
 
+
+# Ίδιο σχήμα με έλεγχο ορίων — μόνο για ΕΙΣΟΔΟ. Η έξοδος μένει χωρίς όρια ώστε
+# μια παλιά εγγραφή με παράξενη τιμή να μη ρίξει ολόκληρη τη λίστα με 500.
+class GeoLocationInput(GeoLocation):
+    lat: float = Field(ge=-90, le=90)
+    lng: float = Field(ge=-180, le=180)
+
 # ---------------------------------------------------------
 # 1. SCHEMAS ΕΙΣΟΔΟΥ (Τι μας στέλνει το Frontend)
 # ---------------------------------------------------------
@@ -55,7 +62,9 @@ class UserCreate(BaseModel):
     address: str
     city: str
     country: str
-    geoLocation: Optional[GeoLocation] = None
+    # ΥΠΟΧΡΕΩΤΙΚΟ: η εκφώνηση §2 ορίζει ότι η εγγραφή «θα απαιτεί» στοιχεία
+    # διεύθυνσης ΚΑΙ γεωγραφικής τοποθεσίας.
+    geoLocation: GeoLocationInput
     afm: str
 
 # Τι περιμένουμε να μας στείλει στο /auth/login
@@ -231,12 +240,15 @@ class EventCreate(BaseModel):
     address: str = Field(min_length=1, max_length=150)
     city: str = Field(min_length=1, max_length=45)
     country: str = Field(min_length=1, max_length=45)
-    geoLocation: Optional[GeoLocation] = None
+    geoLocation: Optional[GeoLocationInput] = None
     startDateTime: datetime
     endDateTime: datetime
     capacity: int = Field(ge=1)
     ticketTypes: list[TicketTypeCreate] = Field(min_length=1)
     description: Optional[str] = None
+    # Οι φωτογραφίες ΑΝΕΒΑΙΝΟΥΝ μόνο από το POST /api/events/{id}/media. Εδώ η
+    # λίστα λειτουργεί μόνο αφαιρετικά στο PUT: ό,τι λείπει σβήνεται, ενώ ονόματα
+    # που δεν ανήκουν ήδη στην εκδήλωση αγνοούνται. Στο POST αγνοείται.
     media: list[str] = Field(default_factory=list)
 
     # Ο έλεγχος Σ(quantity) ≤ capacity ΔΕΝ γίνεται εδώ: το contract τον θέλει ως
@@ -318,8 +330,9 @@ class EventResponse(BaseModel):
             description=event.description,
             media=[m.filename for m in event.media],
             reservedTotal=reserved_total,
-            # Κουμπί διαγραφής στο frontend: μόνο DRAFT και χωρίς καμία κράτηση (§1).
-            isDeletable=(event.status == "DRAFT" and len(event.bookings) == 0),
+            # Ο κανόνας της εκφώνησης §7γ ζει στο models.Event.is_deletable — ο ίδιος
+            # που ελέγχει και το DELETE, ώστε κουμπί και server να συμφωνούν πάντα.
+            isDeletable=event.is_deletable,
             createdAt=event.created,
         )
 

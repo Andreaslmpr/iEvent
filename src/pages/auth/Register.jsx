@@ -1,7 +1,9 @@
 /* ============================================================
    Register — εγγραφή νέου χρήστη (εκφώνηση §2).
    Πεδία: username, password (+confirm), όνομα/επώνυμο, email,
-   τηλέφωνο, διεύθυνση/πόλη/χώρα, ΑΦΜ, (προαιρετικά) γεωγρ. θέση.
+   τηλέφωνο, διεύθυνση/πόλη/χώρα, ΑΦΜ και γεωγραφική θέση.
+   Η εκφώνηση §2 λέει ότι η εγγραφή «θα απαιτεί» στοιχεία διεύθυνσης ΚΑΙ
+   γεωγραφικής τοποθεσίας — γι' αυτό οι συντεταγμένες είναι υποχρεωτικές.
    Σε επιτυχία → /pending. Αν username υπάρχει → inline σφάλμα.
    ============================================================ */
 import { useState } from 'react'
@@ -14,6 +16,7 @@ import { register } from '../../api/index.js'
 import {
   validateUsername, validatePassword, validateConfirm,
   validateEmail, validatePhone, validateAfm, required,
+  validateLatitude, validateLongitude, parseCoordinate,
 } from '../../utils/validation.js'
 import './auth-pages.css'
 
@@ -29,6 +32,17 @@ const validators = {
   city: (v) => required(v, 'Η πόλη'),
   country: (v) => required(v, 'Η χώρα'),
   afm: validateAfm,
+  lat: validateLatitude,
+  lng: validateLongitude,
+}
+
+/* Ο server επικυρώνει το ένθετο `geoLocation` και επιστρέφει κλειδιά όπως
+   "geoLocation.lat". Η φόρμα όμως έχει δύο επίπεδα πεδία, `lat` και `lng` —
+   χωρίς αυτή την αντιστοίχιση το σφάλμα θα χανόταν σε πεδίο που δεν υπάρχει. */
+const FIELD_FOR_DETAIL = {
+  geoLocation: 'lat',
+  'geoLocation.lat': 'lat',
+  'geoLocation.lng': 'lng',
 }
 
 const initial = {
@@ -42,7 +56,31 @@ export default function Register() {
   const navigate = useNavigate()
   const [formError, setFormError] = useState('')
   const [submitting, setSubmitting] = useState(false)
+  const [locating, setLocating] = useState(false)
   const f = useForm(initial, validators)
+
+  /* Συμπληρώνει τις συντεταγμένες από τον browser. Η Geolocation API
+     λειτουργεί μόνο σε ασφαλές πλαίσιο (HTTPS ή localhost) — που ισχύει εδώ. */
+  function fillMyLocation() {
+    if (!navigator.geolocation) {
+      setFormError('Ο browser δεν υποστηρίζει εντοπισμό θέσης — συμπλήρωσε τις συντεταγμένες χειροκίνητα.')
+      return
+    }
+    setFormError('')
+    setLocating(true)
+    navigator.geolocation.getCurrentPosition(
+      ({ coords }) => {
+        f.handleChange({ target: { name: 'lat', value: coords.latitude.toFixed(6) } })
+        f.handleChange({ target: { name: 'lng', value: coords.longitude.toFixed(6) } })
+        setLocating(false)
+      },
+      () => {
+        setFormError('Δεν ήταν δυνατός ο εντοπισμός θέσης — συμπλήρωσε τις συντεταγμένες χειροκίνητα.')
+        setLocating(false)
+      },
+      { timeout: 10000 },
+    )
+  }
 
   async function handleSubmit(e) {
     e.preventDefault()
@@ -54,7 +92,7 @@ export default function Register() {
       const { lat, lng, ...rest } = f.values
       const payload = {
         ...rest,
-        geoLocation: lat && lng ? { lat: Number(lat), lng: Number(lng) } : null,
+        geoLocation: { lat: parseCoordinate(lat), lng: parseCoordinate(lng) },
       }
       await register(payload)
       navigate('/pending', { replace: true })
@@ -64,7 +102,11 @@ export default function Register() {
         f.setFieldError('username', 'Το όνομα χρήστη χρησιμοποιείται ήδη — δοκίμασε άλλο.')
       } else if (code === 'VALIDATION_ERROR') {
         const details = err.response?.data?.error?.details || {}
-        Object.entries(details).forEach(([k, msg]) => f.setFieldError(k, msg))
+        Object.entries(details).forEach(([k, msg]) => f.setFieldError(FIELD_FOR_DETAIL[k] ?? k, msg))
+        // Σφάλμα σε πεδίο που δεν δείχνει η φόρμα δεν πρέπει να χαθεί σιωπηλά.
+        if (Object.keys(details).length === 0) {
+          setFormError(err.response?.data?.error?.message || 'Ελέγξτε τα στοιχεία της φόρμας.')
+        }
       } else {
         setFormError(err.response?.data?.error?.message || 'Η εγγραφή απέτυχε. Δοκίμασε ξανά.')
       }
@@ -118,8 +160,19 @@ export default function Register() {
             <Field label="Χώρα" {...bind('country')} autoComplete="country-name" required />
           </div>
           <div className="field-row">
-            <Field label="Γεωγρ. πλάτος (προαιρετικό)" {...bind('lat')} placeholder="π.χ. 37.9838" />
-            <Field label="Γεωγρ. μήκος (προαιρετικό)" {...bind('lng')} placeholder="π.χ. 23.7275" />
+            <Field label="Γεωγρ. πλάτος" {...bind('lat')} placeholder="π.χ. 37.9838" required />
+            <Field label="Γεωγρ. μήκος" {...bind('lng')} placeholder="π.χ. 23.7275" required />
+          </div>
+          <div className="auth-form__geo">
+            <button
+              type="button" className="btn btn--outline"
+              onClick={fillMyLocation} disabled={locating}
+            >
+              {locating ? 'Εντοπισμός…' : 'Χρήση της τοποθεσίας μου'}
+            </button>
+            <span className="auth-form__hint">
+              ή δεξί κλικ στο σημείο σου στο openstreetmap.org → «Show address».
+            </span>
           </div>
         </fieldset>
 

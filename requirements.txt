@@ -7,6 +7,8 @@ PyMySQL==1.2.0
 pydantic[email]==2.12.4
 python-dotenv==1.1.0
 PyJWT==2.13.0
+# Για το ανέβασμα φωτογραφιών εκδηλώσεων (multipart/form-data, εκφώνηση §7α)
+python-multipart==0.0.32
 # bcrypt απευθείας — ΟΧΙ passlib: το passlib 1.7.4 είναι ασυμβίβαστο με bcrypt 4.1+
 bcrypt==5.0.0
 # Για τον αλγόριθμο συστάσεων (Biased Matrix Factorization, εκφώνηση §13)

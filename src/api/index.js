@@ -21,6 +21,21 @@ import { eventsToXml } from './mock/xmlExport.js'
 
 export const USE_MOCK = import.meta.env.VITE_USE_MOCK === 'true'
 
+/* Πλήρες URL φωτογραφίας εκδήλωσης: {Base}/media/{filename} (contract §1).
+   Στο mock οι φωτογραφίες είναι προσωρινά blob: URLs του browser και
+   επιστρέφονται αυτούσια. */
+export function mediaUrl(filename) {
+  if (/^(blob|data):/.test(filename)) return filename
+  const base = import.meta.env.VITE_API_BASE_URL || '/api'
+  return `${base}/media/${encodeURIComponent(filename)}`
+}
+
+/* Κανόνας διαγραφής της εκφώνησης §7γ: πριν από τη δημοσίευση ή, το αργότερο,
+   πριν από την πρώτη κράτηση — όχι όμως μετά από ακύρωση (τα δεδομένα
+   διατηρούνται). Ίδιος με το models.Event.is_deletable του server. */
+const mockIsDeletable = (event) =>
+  (event.status === 'DRAFT' || event.status === 'PUBLISHED') && event.reservedTotal === 0
+
 /* Μικρή καθυστέρηση ώστε τα mocks να μοιάζουν με πραγματικό δίκτυο. */
 const delay = (ms = 350) => new Promise((res) => setTimeout(res, ms))
 
@@ -103,6 +118,13 @@ export async function register(form) {
     if (form.password !== form.confirmPassword) {
       throw apiError(400, 'VALIDATION_ERROR', 'Οι κωδικοί δεν ταιριάζουν.', {
         confirmPassword: 'Δεν ταιριάζει με τον κωδικό.',
+      })
+    }
+    // Εκφώνηση §2: η εγγραφή «θα απαιτεί» και γεωγραφική τοποθεσία.
+    const geo = form.geoLocation
+    if (!geo || !Number.isFinite(geo.lat) || !Number.isFinite(geo.lng)) {
+      throw apiError(400, 'VALIDATION_ERROR', 'Η γεωγραφική θέση είναι υποχρεωτική.', {
+        geoLocation: 'Συμπληρώστε γεωγραφικό πλάτος και μήκος.',
       })
     }
     if (mockUsers.some((u) => u.username === form.username)) {
@@ -194,6 +216,10 @@ export async function createBooking({ eventId, ticketTypeId, numberOfTickets }) 
     if (event.status !== 'PUBLISHED') {
       throw apiError(409, 'EVENT_NOT_ACTIVE', 'Η εκδήλωση δεν δέχεται κρατήσεις.')
     }
+    // Εκφώνηση §9: κρατήσεις μόνο όσο η εκδήλωση είναι ενεργή.
+    if (new Date(event.startDateTime) <= new Date()) {
+      throw apiError(409, 'EVENT_NOT_ACTIVE', 'Η εκδήλωση έχει ήδη ξεκινήσει και δεν δέχεται νέες κρατήσεις.')
+    }
 
     const type = event.ticketTypes.find((t) => t.id === Number(ticketTypeId))
     if (!type) throw apiError(404, 'NOT_FOUND', 'Ο τύπος εισιτηρίου δεν βρέθηκε.')
@@ -209,6 +235,7 @@ export async function createBooking({ eventId, ticketTypeId, numberOfTickets }) 
     // Ο server το κάνει ατομικά (transaction lock κατά overbooking).
     type.available -= count
     event.reservedTotal += count
+    event.isDeletable = false  // μετά την πρώτη κράτηση δεν διαγράφεται πια (§7γ)
 
     const booking = {
       id: nextId(mockBookings),
@@ -325,7 +352,8 @@ export async function createEvent(payload) {
       })),
       organizer: { id: me.id, username: me.username },
       status: 'DRAFT',
-      media: payload.media ?? [],
+      // Όπως ο server: οι φωτογραφίες ανεβαίνουν μετά, με uploadEventMedia().
+      media: [],
       reservedTotal: 0,
       isDeletable: true,
       createdAt: new Date().toISOString(),
@@ -379,33 +407,40 @@ export async function updateEvent(id, payload) {
       return { id: existing.id, name, price: Number(t.price).toFixed(2), quantity, available: quantity - reserved }
     })
 
+    // Όπως ο server: η λίστα φωτογραφιών στο update μόνο ΑΦΑΙΡΕΙ — κρατάμε όσες
+    // ανήκουν ήδη στην εκδήλωση και υπάρχουν στο payload.
+    const keep = new Set(payload.media ?? [])
+    const media = (event.media ?? []).filter((name) => keep.has(name))
+
     Object.assign(event, {
       ...payload,
       id: event.id,
       capacity: Number(payload.capacity),
       ticketTypes,
+      media,
       organizer: event.organizer,
       status: event.status,
       reservedTotal: event.reservedTotal,
-      isDeletable: event.status === 'DRAFT' && event.reservedTotal === 0,
       createdAt: event.createdAt,
     })
+    event.isDeletable = mockIsDeletable(event)
     return structuredClone(event)
   }
   const { data } = await client.put(`/events/${id}`, payload)
   return data
 }
 
-/* Διαγραφή: επιτρέπεται μόνο σε πρόχειρη εκδήλωση χωρίς κρατήσεις. */
+/* Διαγραφή (εκφώνηση §7γ): πριν από τη δημοσίευση ή, το αργότερο, πριν από
+   την πρώτη κράτηση. Όχι μετά από ακύρωση. */
 export async function deleteEvent(id) {
   if (USE_MOCK) {
     await delay()
     const me = requireUser()
     const event = requireOwnedEvent(id, me)
     const hasBookings = mockBookings.some((b) => b.eventId === event.id)
-    if (event.status !== 'DRAFT' || hasBookings) {
+    if (!mockIsDeletable(event) || hasBookings) {
       throw apiError(409, 'DELETE_NOT_ALLOWED',
-        'Διαγράφονται μόνο πρόχειρες εκδηλώσεις χωρίς κρατήσεις.')
+        'Η εκδήλωση δεν μπορεί να διαγραφεί: έχει ήδη κρατήσεις ή έχει ακυρωθεί.')
     }
     mockEvents.splice(mockEvents.indexOf(event), 1)
     return
@@ -423,7 +458,8 @@ export async function publishEvent(id) {
       throw apiError(409, 'EVENT_NOT_ACTIVE', 'Μόνο πρόχειρες εκδηλώσεις δημοσιεύονται.')
     }
     event.status = 'PUBLISHED'
-    event.isDeletable = false
+    // Δημοσιευμένη χωρίς κρατήσεις διαγράφεται ακόμα (§7γ).
+    event.isDeletable = mockIsDeletable(event)
     return structuredClone(event)
   }
   const { data } = await client.post(`/events/${id}/publish`)
@@ -441,6 +477,7 @@ export async function cancelEvent(id, note = '') {
       throw apiError(409, 'EVENT_NOT_ACTIVE', 'Ακυρώνονται μόνο δημοσιευμένες εκδηλώσεις.')
     }
     event.status = 'CANCELLED'
+    event.isDeletable = false
 
     // Μαζικό μήνυμα σε κάθε συμμετέχοντα με κράτηση (μία φορά ανά χρήστη).
     const attendees = new Map()
@@ -462,6 +499,29 @@ export async function cancelEvent(id, note = '') {
     return structuredClone(event)
   }
   const { data } = await client.post(`/events/${id}/cancel`, { note })
+  return data
+}
+
+/* Ανέβασμα φωτογραφιών εκδήλωσης (εκφώνηση §7α) — μόνο ο διοργανωτής.
+   multipart/form-data με ένα πεδίο `files` ανά φωτογραφία. Επιστρέφει το
+   ενημερωμένο Event DTO. Ο server ελέγχει τύπο (από τα bytes) και μέγεθος. */
+export async function uploadEventMedia(id, files) {
+  if (USE_MOCK) {
+    await delay()
+    const me = requireUser()
+    const event = requireOwnedEvent(id, me)
+    // Στο mock δεν υπάρχει δίσκος: κρατάμε προσωρινά URLs του browser.
+    event.media = [...(event.media ?? []), ...files.map((file) => URL.createObjectURL(file))]
+    return structuredClone(event)
+  }
+  const form = new FormData()
+  files.forEach((file) => form.append('files', file))
+  // Ρητό Content-Type: ο client έχει προεπιλογή application/json, με την οποία
+  // το axios θα μετέτρεπε το FormData σε JSON. Με multipart, ο browser
+  // συμπληρώνει μόνος του το boundary.
+  const { data } = await client.post(`/events/${id}/media`, form, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  })
   return data
 }
 

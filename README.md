@@ -16,7 +16,7 @@
 εγγραφής και εξάγει τα δεδομένα.
 
 - Εγγραφή με έγκριση διαχειριστή · JWT · όλες οι κλήσεις πάνω από TLS
-- Δημιουργία εκδηλώσεων με τύπους εισιτηρίων και έλεγχο χωρητικότητας
+- Δημιουργία εκδηλώσεων με τύπους εισιτηρίων, έλεγχο χωρητικότητας και φωτογραφίες
 - Αναζήτηση με 7 κριτήρια, σελιδοποίηση παντού
 - Κρατήσεις με προστασία από υπερκράτηση (`SELECT … FOR UPDATE`)
 - Χάρτης OpenStreetMap στη σελίδα εκδήλωσης
@@ -109,15 +109,19 @@ npm run dev           # https://localhost:5173
 ├── models.py               SQLAlchemy ORM — 9 πίνακες
 ├── schemas.py              Pydantic DTOs (είσοδος + έξοδος)
 ├── security.py             JWT, bcrypt, dependencies ρόλων
-├── routers/                27 endpoints σε 6 ενότητες
+├── routers/                28 endpoints σε 6 ενότητες
 │   ├── auth.py             εγγραφή · είσοδος
 │   ├── admin.py            χρήστες · έγκριση/απόρριψη · export XML/JSON
-│   ├── events.py           CRUD · αναζήτηση · publish/cancel · κρατήσεις
+│   ├── events.py           CRUD · αναζήτηση · publish/cancel · κρατήσεις · φωτογραφίες
 │   ├── bookings.py         δημιουργία κράτησης · οι κρατήσεις μου
 │   ├── messages.py         inbox/outbox · unread-count · διαγραφή
 │   └── recommendations.py  GET /api/recommendations
 ├── services/
-│   └── recommender.py      Biased Matrix Factorization (SGD, εκ του μηδενός)
+│   ├── recommender.py      Biased Matrix Factorization (SGD, εκ του μηδενός)
+│   ├── evaluate_recommender.py  αξιολόγηση του αλγορίθμου στο dataset του e-class
+│   └── media.py            αποθήκευση & έλεγχος φωτογραφιών
+├── media/                  φωτογραφίες που ανεβάζουν οι χρήστες (εκτός git)
+├── dataset/                dataset συστάσεων του e-class, 1,5 GB (εκτός git)
 │
 ├── db/
 │   ├── events.dtd          Το DTD της εκφώνησης
@@ -137,10 +141,36 @@ npm run dev           # https://localhost:5173
 │   ├── utils/              μορφοποίηση · επικύρωση · λήψη αρχείων
 │   └── styles/             theme.css (design tokens) · components · global
 │
-├── docs/report.html        Τεχνική αναφορά → Ctrl+P → «Αποθήκευση ως PDF»
-├── API_CONTRACT.md         Το συμβόλαιο backend ↔ frontend (v1.1)
+├── docs/
+│   ├── report.pdf          Τεχνική αναφορά της παράδοσης
+│   ├── report.html         Η πηγή της αναφοράς (Chrome → Εκτύπωση → PDF)
+│   └── recommender_evaluation.md  Αποτελέσματα αξιολόγησης του αλγορίθμου
+├── API_CONTRACT.md         Το συμβόλαιο backend ↔ frontend (v1.2)
 └── CLAUDE.md               Συμβάσεις ανάπτυξης & εκκρεμότητες
 ```
+
+---
+
+## Αξιολόγηση του αλγορίθμου συστάσεων
+
+Το dataset του e-class (εκφώνηση §13) **δεν** είναι στο repo — 1,5 GB, πάνω από
+το όριο του GitHub. Τοποθέτησέ το ως `dataset/rel_event_csvs/` και τρέξε από τη
+ρίζα:
+
+```bash
+.venv/bin/python -m services.evaluate_recommender     # Windows: .venv/Scripts/python
+```
+
+Το script εκπαιδεύει τον **ίδιο** κώδικα που χρησιμοποιεί η εφαρμογή
+(`services/recommender.py`) στο `event_interest.csv`, με διαχωρισμό
+εκπαίδευσης/ελέγχου 80/20, και τον συγκρίνει με απλούστερα μοντέλα αναφοράς
+και μετρά δύο πράγματα: πόσο καλά ξεχωρίζει τις εκδηλώσεις που ενδιέφεραν τον
+χρήστη, και —αυτό που κάνει η εφαρμογή— πόσο ψηλά κατατάσσει μια τέτοια εκδήλωση
+ανάμεσα σε 99 που δεν έχει δει. Με τις προεπιλογές της εφαρμογής, στις 10 πρώτες
+μπαίνει στο **36%** των περιπτώσεων (τυχαία κατάταξη: ~9%).
+
+Πλήρη αποτελέσματα: `docs/recommender_evaluation.md` · ερμηνεία: κεφάλαιο 7.5 της
+αναφοράς.
 
 ---
 
@@ -203,7 +233,7 @@ VITE_USE_MOCK=true
 | Μέλος | Αρμοδιότητα |
 |---|---|
 | **Γεώργιος Πατσάκας** | Μετωπιαίο άκρο (React), διεπαφή χρήστη, κατανάλωση του REST API, σύνταξη του συμβολαίου |
-| **Ανδρέας** | Νωτιαίο άκρο (FastAPI), σχεσιακή βάση & ORM, αλγόριθμος συστάσεων, εξαγωγή XML/JSON |
+| **Ανδρέας Λαμπρόπουλος** | Νωτιαίο άκρο (FastAPI), σχεσιακή βάση & ORM, αλγόριθμος συστάσεων, εξαγωγή XML/JSON |
 
 Η ανάπτυξη έγινε παράλληλα και στα δύο άκρα, με το `API_CONTRACT.md` ως
 συμφωνημένο σημείο συνάντησης.

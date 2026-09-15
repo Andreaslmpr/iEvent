@@ -1,7 +1,8 @@
 /* ============================================================
    Login — είσοδος χρήστη (εκφώνηση §1).
-   Καλεί AuthContext.login → mock API. Σε επιτυχία, redirect:
-     ADMIN → /admin,  USER → η σελίδα που ζητούσε ή /events.
+   Καλεί AuthContext.login. Σε επιτυχία, redirect:
+     ADMIN → /admin (εκφώνηση §3: σελίδα διαχείρισης χρηστών)
+     USER  → η σελίδα που ζητούσε, αλλιώς η αρχική (εκφώνηση §5).
    ============================================================ */
 import { useState } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
@@ -33,9 +34,10 @@ export default function Login() {
     setSubmitting(true)
     try {
       const user = await login(values)
-      // Redirect: admin στο panel, αλλιώς στη σελίδα που ζητούσε ή στις εκδηλώσεις.
+      // Εκφώνηση §5: «Όταν εισέρχεται ένας εγγεγραμμένος χρήστης θα πλοηγείται
+      // στην αρχική σελίδα» — από εκεί διαλέγει διαχείριση ή αναζήτηση (§6).
       const from = location.state?.from?.pathname
-      const dest = user.role === 'ADMIN' ? '/admin' : from || '/events'
+      const dest = user.role === 'ADMIN' ? '/admin' : from || '/'
       navigate(dest, { replace: true })
     } catch (err) {
       setFormError(err.response?.data?.error?.message || 'Κάτι πήγε στραβά. Δοκιμάστε ξανά.')

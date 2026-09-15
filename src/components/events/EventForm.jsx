@@ -7,16 +7,24 @@
    Οι έλεγχοι εδώ είναι για τον χρήστη — την τελική ευθύνη την
    έχει ο server (CAPACITY_EXCEEDED κ.λπ.).
    ============================================================ */
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import Field from '../form/Field.jsx'
 import Alert from '../ui/Alert.jsx'
 import EventMap from './EventMap.jsx'
+import { mediaUrl } from '../../api/index.js'
 import { EVENT_CATEGORIES } from '../../api/mock/db.js'
 import { toInputDateTime, fromInputDateTime } from '../../utils/format.js'
 import '../form/form.css'
 import './EventForm.css'
 
 const BLANK_TICKET = { name: '', price: '', quantity: '' }
+
+/* Φωτογραφίες (εκφώνηση §7α). Ίδια όρια με τον server (services/media.py):
+   εδώ είναι για άμεση ανατροφοδότηση — την τελική κρίση την κάνει ο server,
+   που ελέγχει τον τύπο από τα ίδια τα bytes του αρχείου. */
+const MAX_PHOTOS = 10
+const MAX_PHOTO_BYTES = 5 * 1024 * 1024
+const PHOTO_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp']
 
 const EMPTY_FORM = {
   title: '', eventType: '', categories: [], venue: '', address: '',
@@ -43,9 +51,8 @@ function toFormValues(event) {
     end: toInputDateTime(event.endDateTime),
     capacity: String(event.capacity),
     description: event.description,
-    // Το PUT αντικαθιστά ΟΛΟΚΛΗΡΟ τον πίνακα media στον server. Δεν έχουμε
-    // ακόμα UI ανεβάσματος (contract §3: TBD), οπότε το κουβαλάμε αυτούσιο —
-    // αλλιώς κάθε επεξεργασία θα έσβηνε τα αρχεία της εκδήλωσης.
+    // Οι ήδη ανεβασμένες φωτογραφίες. Στο PUT η λίστα λειτουργεί αφαιρετικά:
+    // ό,τι λείπει σβήνεται στον server. Νέες φωτογραφίες ανεβαίνουν χωριστά.
     media: event.media ?? [],
     ticketTypes: event.ticketTypes.map((t) => ({
       id: t.id,
@@ -136,6 +143,16 @@ export default function EventForm({
   const [errors, setErrors] = useState({})
   const [submitted, setSubmitted] = useState(false)
 
+  // Νέες φωτογραφίες που δεν έχουν ανέβει ακόμα: { file, preview }.
+  const [newPhotos, setNewPhotos] = useState([])
+  const [photoError, setPhotoError] = useState('')
+  const fileInput = useRef(null)
+
+  // Τα blob: URLs της προεπισκόπησης κρατούν μνήμη μέχρι να ελευθερωθούν ρητά.
+  const previews = useRef([])
+  useEffect(() => { previews.current = newPhotos }, [newPhotos])
+  useEffect(() => () => previews.current.forEach((p) => URL.revokeObjectURL(p.preview)), [])
+
   /* Μετά την πρώτη υποβολή, τα σφάλματα ανανεώνονται σε κάθε αλλαγή
      ώστε ο χρήστης να βλέπει αμέσως ότι διόρθωσε το πεδίο. */
   function update(patch) {
@@ -165,6 +182,33 @@ export default function EventForm({
     update({ ticketTypes: values.ticketTypes.filter((_, i) => i !== index) })
   }
 
+  function addPhotos(e) {
+    const picked = Array.from(e.target.files ?? [])
+    e.target.value = '' // ώστε να μπορεί να ξαναδιαλέξει το ίδιο αρχείο
+    setPhotoError('')
+    if (picked.length === 0) return
+
+    const invalid = picked.find((file) => !PHOTO_TYPES.includes(file.type) || file.size > MAX_PHOTO_BYTES)
+    if (invalid) {
+      setPhotoError(`Το «${invalid.name}» πρέπει να είναι JPEG, PNG, GIF ή WebP έως 5 MB.`)
+      return
+    }
+    if (values.media.length + newPhotos.length + picked.length > MAX_PHOTOS) {
+      setPhotoError(`Μέχρι ${MAX_PHOTOS} φωτογραφίες ανά εκδήλωση.`)
+      return
+    }
+    setNewPhotos([...newPhotos, ...picked.map((file) => ({ file, preview: URL.createObjectURL(file) }))])
+  }
+
+  function removeExistingPhoto(name) {
+    update({ media: values.media.filter((m) => m !== name) })
+  }
+
+  function removeNewPhoto(index) {
+    URL.revokeObjectURL(newPhotos[index].preview)
+    setNewPhotos(newPhotos.filter((_, i) => i !== index))
+  }
+
   function handleSubmit(e) {
     e.preventDefault()
     setSubmitted(true)
@@ -172,7 +216,9 @@ export default function EventForm({
     setErrors(found)
     if (Object.keys(found).length > 0) return
 
-    // Σχήμα request όπως ακριβώς το ορίζει το API_CONTRACT.md.
+    // Σχήμα request όπως ακριβώς το ορίζει το API_CONTRACT.md. Οι νέες
+    // φωτογραφίες δίνονται χωριστά: ανεβαίνουν ΜΕΤΑ την αποθήκευση, γιατί το
+    // POST /events/{id}/media χρειάζεται εκδήλωση που ήδη υπάρχει.
     onSubmit({
       title: values.title.trim(),
       categories: values.categories,
@@ -194,7 +240,7 @@ export default function EventForm({
       })),
       description: values.description.trim(),
       media: values.media,
-    })
+    }, newPhotos.map((photo) => photo.file))
   }
 
   const ticketSum = values.ticketTypes.reduce((total, t) => total + (Number(t.quantity) || 0), 0)
@@ -254,6 +300,52 @@ export default function EventForm({
             <span className="field__message" role="alert">{errors.description}</span>
           )}
         </div>
+      </section>
+
+      {/* ---------- Φωτογραφίες (εκφώνηση §7α) ---------- */}
+      <section className="eform__section">
+        <h2 className="eform__legend">Φωτογραφίες</h2>
+        <p className="eform__hint eform__hint--lead">
+          Προαιρετικές — έως {MAX_PHOTOS}, JPEG, PNG, GIF ή WebP μέχρι 5 MB η καθεμία.
+          Η πρώτη εμφανίζεται ως εξώφυλλο στην αναζήτηση.
+        </p>
+
+        {(values.media.length > 0 || newPhotos.length > 0) && (
+          <ul className="photos">
+            {values.media.map((name) => (
+              <li key={name} className="photo">
+                <img src={mediaUrl(name)} alt="" className="photo__img" />
+                <button
+                  type="button" className="photo__remove"
+                  onClick={() => removeExistingPhoto(name)} aria-label="Αφαίρεση φωτογραφίας"
+                >
+                  ✕
+                </button>
+              </li>
+            ))}
+            {newPhotos.map((photo, index) => (
+              <li key={photo.preview} className="photo photo--new">
+                <img src={photo.preview} alt="" className="photo__img" />
+                <span className="photo__badge">Νέα</span>
+                <button
+                  type="button" className="photo__remove"
+                  onClick={() => removeNewPhoto(index)} aria-label={`Αφαίρεση ${photo.file.name}`}
+                >
+                  ✕
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+
+        <input
+          ref={fileInput} type="file" accept={PHOTO_TYPES.join(',')} multiple hidden
+          onChange={addPhotos}
+        />
+        <button type="button" className="btn btn--outline" onClick={() => fileInput.current.click()}>
+          + Προσθήκη φωτογραφιών
+        </button>
+        {photoError && <span className="field__message" role="alert">{photoError}</span>}
       </section>
 
       {/* ---------- Πότε & πού ---------- */}

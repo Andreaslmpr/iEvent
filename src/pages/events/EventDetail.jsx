@@ -8,7 +8,7 @@
    ============================================================ */
 import { useEffect, useState } from 'react'
 import { Link, useNavigate, useLocation, useParams } from 'react-router-dom'
-import { getEvent, createBooking } from '../../api/index.js'
+import { getEvent, createBooking, mediaUrl } from '../../api/index.js'
 import { useAuth } from '../../context/AuthContext.jsx'
 import EventMap from '../../components/events/EventMap.jsx'
 import Modal from '../../components/ui/Modal.jsx'
@@ -76,7 +76,11 @@ export default function EventDetail() {
   const selected = event.ticketTypes.find((t) => t.id === ticketTypeId)
   const seatsLeft = totalAvailable(event)
   const isOrganizer = user?.id === event.organizer.id
-  const isBookable = event.status === 'PUBLISHED' && seatsLeft > 0
+  // Εκφώνηση §9: κρατήσεις μόνο όσο η εκδήλωση είναι ενεργή. Ο server το
+  // ελέγχει ούτως ή άλλως (409)· εδώ απλώς δεν προσφέρουμε κουμπί που θα αποτύχει.
+  const hasStarted = new Date(event.startDateTime) <= new Date()
+  const isBookable = event.status === 'PUBLISHED' && !hasStarted && seatsLeft > 0
+  const photos = event.media ?? []
   const maxQuantity = selected?.available ?? 0
   const total = selected ? Number(selected.price) * quantity : 0
   const status = EVENT_STATUS[event.status]
@@ -143,6 +147,24 @@ export default function EventDetail() {
             <p className="detail__text">{event.description}</p>
           </section>
 
+          {photos.length > 0 && (
+            <section className="detail__section">
+              <h2>Φωτογραφίες</h2>
+              <ul className="gallery">
+                {photos.map((name, index) => (
+                  <li key={name}>
+                    <a href={mediaUrl(name)} target="_blank" rel="noreferrer">
+                      <img
+                        src={mediaUrl(name)} className="gallery__img" loading="lazy"
+                        alt={`${event.title} — φωτογραφία ${index + 1}`}
+                      />
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
+
           <section className="detail__section">
             <h2>Στοιχεία</h2>
             <dl className="detail__facts">
@@ -183,6 +205,10 @@ export default function EventDetail() {
             {event.status !== 'PUBLISHED' ? (
               <p className="booking__note">
                 Η εκδήλωση δεν δέχεται κρατήσεις ({status.label.toLowerCase()}).
+              </p>
+            ) : hasStarted ? (
+              <p className="booking__note">
+                Η εκδήλωση έχει ήδη ξεκινήσει και δεν δέχεται νέες κρατήσεις.
               </p>
             ) : (
               <>
