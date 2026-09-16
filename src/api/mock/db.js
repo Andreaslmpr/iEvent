@@ -303,6 +303,7 @@ export const mockEvents = [
 export const mockBookings = [
   {
     id: 501, eventId: 1024, eventTitle: 'Συναυλία Σύγχρονης Μουσικής',
+    eventStartDateTime: '2026-07-12T20:30:00Z', eventStatus: 'PUBLISHED', eventCover: null,
     attendee: { id: 12, username: 'maria21' },
     ticketTypeId: 1, ticketTypeName: 'General Admission',
     numberOfTickets: 2, totalCost: '36.00',
@@ -310,6 +311,7 @@ export const mockBookings = [
   },
   {
     id: 502, eventId: 1026, eventTitle: 'Θεατρική Παράσταση: Αντιγόνη',
+    eventStartDateTime: '2026-07-20T21:00:00Z', eventStatus: 'PUBLISHED', eventCover: null,
     attendee: { id: 12, username: 'maria21' },
     ticketTypeId: 5, ticketTypeName: 'Φοιτητικό',
     numberOfTickets: 1, totalCost: '15.00',

@@ -1,10 +1,14 @@
 /* ============================================================
    MyBookings — «Οι κρατήσεις μου» (εκφώνηση §9).
    Ιστορικό κρατήσεων του συνδεδεμένου χρήστη, νεότερες πρώτα.
+
+   Η ετικέτα κατάστασης λαμβάνει υπόψη και την ΕΚΔΗΛΩΣΗ: μια
+   επιβεβαιωμένη κράτηση σε εκδήλωση που ακυρώθηκε ή έχει ήδη γίνει
+   δεν πρέπει να φαίνεται σαν «ενεργή».
    ============================================================ */
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { getMyBookings } from '../../api/index.js'
+import { getMyBookings, mediaUrl } from '../../api/index.js'
 import Loader from '../../components/ui/Loader.jsx'
 import EmptyState from '../../components/ui/EmptyState.jsx'
 import Alert from '../../components/ui/Alert.jsx'
@@ -13,6 +17,18 @@ import { formatDateTime, formatMoney, errorMessage, BOOKING_STATUS } from '../..
 import './MyBookings.css'
 
 const PAGE_SIZE = 10
+
+/* Ποια ετικέτα δείχνουμε για την κράτηση. */
+function bookingBadge(booking) {
+  if (booking.status === 'CANCELLED') return BOOKING_STATUS.CANCELLED
+  if (booking.eventStatus === 'CANCELLED') {
+    return { label: 'Η εκδήλωση ακυρώθηκε', variant: 'badge--danger' }
+  }
+  if (new Date(booking.eventStartDateTime) <= new Date()) {
+    return { label: 'Έχει πραγματοποιηθεί', variant: '' }
+  }
+  return BOOKING_STATUS[booking.status]
+}
 
 export default function MyBookings() {
   const [result, setResult] = useState(null)
@@ -62,13 +78,26 @@ export default function MyBookings() {
         <>
           <div className="bookings-list">
             {items.map((booking) => {
-              const status = BOOKING_STATUS[booking.status]
+              const status = bookingBadge(booking)
+              const start = new Date(booking.eventStartDateTime)
               return (
                 <article key={booking.id} className="card booking-row">
-                  <div>
+                  <Link to={`/events/${booking.eventId}`} className="booking-row__cover" tabIndex={-1} aria-hidden="true">
+                    {booking.eventCover ? (
+                      <img src={mediaUrl(booking.eventCover)} alt="" loading="lazy" />
+                    ) : (
+                      <span className="booking-row__day">
+                        <strong>{start.getDate()}</strong>
+                        {start.toLocaleDateString('el-GR', { month: 'short' })}
+                      </span>
+                    )}
+                  </Link>
+
+                  <div className="booking-row__main">
                     <h2 className="booking-row__title">
                       <Link to={`/events/${booking.eventId}`}>{booking.eventTitle}</Link>
                     </h2>
+                    <p className="booking-row__when">{formatDateTime(booking.eventStartDateTime)}</p>
                     <p className="booking-row__meta">
                       {booking.ticketTypeName} · {booking.numberOfTickets}{' '}
                       {booking.numberOfTickets === 1 ? 'εισιτήριο' : 'εισιτήρια'}

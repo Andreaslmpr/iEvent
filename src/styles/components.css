@@ -15,27 +15,32 @@
   font-size: var(--text-sm);
   font-weight: var(--weight-medium);
   line-height: 1;
-  transition: background var(--transition), color var(--transition), border-color var(--transition);
+  transition:
+    background var(--transition), color var(--transition),
+    border-color var(--transition), transform var(--transition-press);
   white-space: nowrap;
 }
+/* Ανάδραση στο πάτημα: το κουμπί «βυθίζεται» ελαφρά. */
+.btn:active:not(:disabled) { transform: scale(0.97); }
 .btn:disabled { opacity: 0.55; cursor: not-allowed; }
 
 .btn--primary {
   background: var(--color-primary);
-  color: #fff;
+  color: var(--color-on-accent);
+  box-shadow: var(--shadow-sm);
 }
 .btn--primary:hover:not(:disabled) {
   background: var(--color-primary-hover);
-  color: #fff;
+  color: var(--color-on-accent);
 }
 
 .btn--ghost {
   background: transparent;
   color: inherit;
-  border-color: rgba(255, 255, 255, 0.3);
+  border-color: var(--color-on-accent-line);
 }
 .btn--ghost:hover:not(:disabled) {
-  background: rgba(255, 255, 255, 0.12);
+  background: var(--color-on-accent-line);
 }
 
 .btn--outline {
@@ -56,6 +61,14 @@
 
 .btn--lg { padding: var(--space-3) var(--space-6); font-size: var(--text-base); }
 
+/* Το «κίνδυνος» κουμπί χρησιμοποιείται σε πολλές σελίδες (dashboard, μηνύματα). */
+.btn--danger {
+  background: transparent;
+  color: var(--color-danger);
+  border-color: var(--color-danger);
+}
+.btn--danger:hover:not(:disabled) { background: var(--color-danger-soft); }
+
 /* --- Card --- */
 .card {
   background: var(--color-surface);
@@ -68,6 +81,7 @@
 /* --- Badge --- */
 .badge {
   display: inline-flex;
+  font-family: var(--font-sans); /* και μέσα σε τίτλους (serif) */
   align-items: center;
   padding: var(--space-1) var(--space-3);
   border-radius: var(--radius-full);
@@ -79,3 +93,16 @@
 .badge--success { background: var(--color-success-soft); color: var(--color-success); }
 .badge--warning { background: var(--color-warning-soft); color: var(--color-warning); }
 .badge--danger  { background: var(--color-danger-soft);  color: var(--color-danger); }
+
+/* --- Μειωμένη κίνηση: σεβόμαστε τη ρύθμιση του λειτουργικού.
+   (Ο spinner εξαιρείται: επιβραδύνεται στο feedback.css αλλά συνεχίζει να γυρίζει.) */
+@media (prefers-reduced-motion: reduce) {
+  *:not(.spinner),
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+  }
+}

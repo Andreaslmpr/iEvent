@@ -1,18 +1,19 @@
 .auth {
   display: grid;
-  grid-template-columns: 1.05fr 1fr;
+  /* Το βίντεο παίρνει τον περισσότερο χώρο· η φόρμα μένει στενή στήλη. */
+  grid-template-columns: minmax(0, 1.8fr) minmax(360px, 1fr);
   min-height: 100vh;
 }
 
 /* ---------- Visual panel (αριστερά) ---------- */
 .auth__aside {
-  position: relative;
+  /* Μένει σταθερό στο ύψος της οθόνης όσο κυλά μια μακριά φόρμα (εγγραφή). */
+  position: sticky;
+  top: 0;
+  height: 100vh;
   overflow: hidden;
-  background:
-    radial-gradient(circle at 20% 30%, #34457a 0%, transparent 55%),
-    radial-gradient(circle at 80% 80%, #3a2a4f 0%, transparent 50%),
-    var(--color-accent);
-  color: #fff;
+  background: var(--color-accent-deep); /* μέχρι να φορτώσει το βίντεο */
+  color: var(--color-on-accent);
   display: flex;
   align-items: center;
   padding: var(--space-10);
@@ -21,7 +22,7 @@
 .auth__aside-content {
   position: relative;
   z-index: 1;
-  max-width: 420px;
+  max-width: 480px;
 }
 
 .auth__brand {
@@ -29,7 +30,7 @@
   font-size: var(--text-xl);
   font-weight: var(--weight-bold);
   letter-spacing: 0.04em;
-  color: #fff;
+  color: var(--color-on-accent);
   text-transform: uppercase;
 }
 .auth__brand-accent { color: var(--color-primary); }
@@ -41,6 +42,7 @@
   font-weight: 600;
   margin-top: var(--space-8);
   letter-spacing: 0.005em;
+  text-shadow: 0 2px 16px var(--color-video-shade-strong);
 }
 
 .auth__quote-sub {
@@ -48,7 +50,26 @@
   font-size: var(--text-sm);
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.65);
+  color: var(--color-on-accent-soft);
+}
+
+/* Βίντεο φόντου: γεμίζει το πάνελ, κρατώντας στο κάδρο το φανάρι. */
+.auth__video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 62% center;
+}
+
+/* Σκίαση πάνω από το βίντεο ώστε το κείμενο να διαβάζεται. */
+.auth__aside-shade {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(90deg, var(--color-video-shade-strong) 0%, var(--color-video-shade) 70%, transparent 100%),
+    linear-gradient(0deg, var(--color-video-shade-strong) 0%, transparent 45%);
 }
 
 /* Διακοσμητικό φωτεινό blob */
@@ -66,21 +87,21 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: var(--space-8) var(--space-6);
+  padding: var(--space-8) var(--space-5);
   background: var(--color-bg);
   overflow-y: auto;
 }
 
 .auth__form-wrap {
   width: 100%;
-  max-width: 400px;
+  max-width: 360px;
 }
-.auth__form-wrap--wide { max-width: 560px; }
+.auth__form-wrap--wide { max-width: 460px; }
 
 .auth__header { margin-bottom: var(--space-6); }
 
 .auth__title {
-  font-size: var(--text-3xl);
+  font-size: var(--text-2xl);
   letter-spacing: 0.01em;
 }
 

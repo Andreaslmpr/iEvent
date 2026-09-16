@@ -1,49 +1,64 @@
 .welcome {
   background:
-    radial-gradient(circle at 15% 20%, rgba(224, 83, 61, 0.10), transparent 40%),
-    radial-gradient(circle at 85% 10%, rgba(43, 58, 103, 0.10), transparent 45%),
+    radial-gradient(circle at 12% 18%, var(--color-primary-soft), transparent 42%),
+    radial-gradient(circle at 88% 8%, var(--color-surface-2), transparent 48%),
     var(--color-bg);
-  min-height: calc(100vh - var(--header-height));
-  display: flex;
-  align-items: center;
+  border-bottom: 1px solid var(--color-border);
 }
 
-/* Για τον συνδεδεμένο χρήστη το hero είναι επικεφαλίδα, όχι landing:
-   δεν πιάνει όλη την οθόνη ώστε να φαίνονται από κάτω οι προτάσεις (§13). */
-.welcome--compact {
-  min-height: 0;
-}
+/* Για τον συνδεδεμένο χρήστη το hero είναι επικεφαλίδα, όχι landing. */
+.welcome--compact .welcome__inner { padding-block: var(--space-8); }
 
 .welcome__inner {
-  max-width: 760px;
+  max-width: 800px;
   padding-block: var(--space-10);
   text-align: center;
 }
+@media (min-width: 900px) {
+  .welcome__inner { padding-block: calc(var(--space-10) * 1.75); }
+}
 
 .welcome__inner--start {
-  max-width: none;
-  padding-block: var(--space-8);
+  max-width: var(--container-max);
   text-align: left;
 }
 
+/* Είσοδος του hero: τα στοιχεία εμφανίζονται κλιμακωτά (μόνο μία φορά). */
+.welcome__inner > * {
+  animation: rise 420ms var(--ease-out) both;
+}
+.welcome__inner > :nth-child(2) { animation-delay: 60ms; }
+.welcome__inner > :nth-child(3) { animation-delay: 120ms; }
+.welcome__inner > :nth-child(4) { animation-delay: 180ms; }
+.welcome__inner > :nth-child(5) { animation-delay: 240ms; }
+
+@keyframes rise {
+  from { opacity: 0; transform: translateY(8px); }
+}
+
 .welcome__eyebrow {
+  display: inline-block;
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-full);
+  background: var(--color-primary-soft);
   text-transform: uppercase;
-  letter-spacing: 0.12em;
-  font-size: var(--text-sm);
-  font-weight: var(--weight-medium);
-  color: var(--color-primary);
-  margin-bottom: var(--space-4);
+  letter-spacing: 0.1em;
+  font-size: var(--text-xs);
+  font-weight: var(--weight-bold);
+  color: var(--color-primary-hover);
+  margin-bottom: var(--space-5);
 }
 
 .welcome__title {
-  font-size: clamp(2rem, 5vw, var(--text-3xl));
+  font-size: clamp(2.25rem, 6vw, 3.5rem);
   margin-bottom: var(--space-5);
+  letter-spacing: -0.01em;
 }
 .welcome__title--sm {
-  font-size: clamp(1.75rem, 4vw, var(--text-2xl));
+  font-size: clamp(1.75rem, 4vw, var(--text-3xl));
   margin-bottom: var(--space-3);
 }
-.welcome__accent { color: var(--color-primary); }
+.welcome__accent { color: var(--color-primary); font-style: italic; }
 
 .welcome__lead {
   font-size: var(--text-lg);
@@ -69,3 +84,82 @@
   font-size: var(--text-sm);
   color: var(--color-ink-soft);
 }
+
+/* ---------- Τμήματα της αρχικής ---------- */
+.home { padding-block: var(--space-10); }
+
+.home-section { margin-bottom: var(--space-10); }
+
+.home-section__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-bottom: var(--space-5);
+}
+.home-section__head--center { justify-content: center; text-align: center; }
+
+.home-section__eyebrow {
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-weight: var(--weight-bold);
+  color: var(--color-primary);
+  margin-bottom: var(--space-1);
+}
+
+.home-section__more { font-size: var(--text-sm); white-space: nowrap; }
+
+.home-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+  gap: var(--space-5);
+}
+
+/* ---------- «Πώς λειτουργεί» ---------- */
+.features {
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: var(--space-5);
+}
+
+.feature { padding: var(--space-5); }
+
+.feature__icon {
+  display: inline-grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-md);
+  background: var(--color-primary-soft);
+  color: var(--color-primary);
+  margin-bottom: var(--space-4);
+}
+
+.feature__step {
+  display: block;
+  font-size: var(--text-xs);
+  color: var(--color-ink-faint);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.feature__title { font-size: var(--text-xl); margin: var(--space-1) 0 var(--space-2); }
+.feature__text { font-size: var(--text-sm); color: var(--color-ink-soft); }
+
+/* ---------- Τελική πρόσκληση ---------- */
+.cta-band {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-5);
+  padding: var(--space-6);
+  border-radius: var(--radius-lg);
+  background: linear-gradient(120deg, var(--color-accent-deep), var(--color-accent));
+  color: var(--color-on-accent-soft);
+}
+.cta-band__title { color: var(--color-on-accent); font-size: var(--text-2xl); }
+.cta-band__text { margin-top: var(--space-1); max-width: 52ch; }

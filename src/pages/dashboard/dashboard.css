@@ -14,10 +14,49 @@
 
 .my-event {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: var(--space-4);
-  padding: var(--space-5);
-  align-items: start;
+  grid-template-columns: 96px minmax(0, 1fr) auto;
+  gap: var(--space-5);
+  padding: var(--space-4);
+  align-items: center;
+}
+
+.my-event__cover {
+  display: grid;
+  place-items: center;
+  aspect-ratio: 1;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: linear-gradient(135deg, var(--color-accent), var(--color-primary));
+  color: var(--color-on-accent);
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  text-align: center;
+  padding: var(--space-1);
+}
+.my-event__cover:has(img) { padding: 0; }
+.my-event__cover img { width: 100%; height: 100%; object-fit: cover; }
+
+/* Μπάρα πληρότητας: κλιμάκωση (transform) αντί για width. */
+.my-event__fill {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-top: var(--space-2);
+}
+.my-event__bar {
+  flex: 0 1 160px;
+  height: 6px;
+  border-radius: var(--radius-full);
+  background: var(--color-surface-2);
+  overflow: hidden;
+}
+.my-event__bar span {
+  display: block;
+  height: 100%;
+  background: var(--color-primary);
+  transform-origin: left;
+  transition: transform 300ms var(--ease-out);
 }
 
 .my-event__title {
@@ -35,8 +74,7 @@
 
 .my-event__seats {
   font-size: var(--text-xs);
-  color: var(--color-ink-faint);
-  margin-top: var(--space-1);
+  color: var(--color-ink-soft);
 }
 
 .my-event__actions {
@@ -46,13 +84,6 @@
   justify-content: flex-end;
 }
 .my-event__actions .btn { font-size: var(--text-xs); padding: var(--space-2) var(--space-3); }
-
-.btn--danger {
-  background: transparent;
-  color: var(--color-danger);
-  border-color: var(--color-danger);
-}
-.btn--danger:hover:not(:disabled) { background: var(--color-danger-soft); }
 
 .modal__note {
   width: 100%;
@@ -100,7 +131,14 @@
 }
 .summary__value { font-size: var(--text-2xl); font-family: var(--font-display); font-weight: var(--weight-bold); }
 
-@media (max-width: 700px) {
-  .my-event { grid-template-columns: 1fr; }
-  .my-event__actions { justify-content: flex-start; }
+@media (max-width: 760px) {
+  .my-event { grid-template-columns: 64px minmax(0, 1fr); gap: var(--space-4); }
+  .my-event__actions {
+    grid-column: 1 / -1;
+    justify-content: flex-start;
+    padding-top: var(--space-3);
+    border-top: 1px solid var(--color-border);
+  }
+  .my-event__actions .btn { flex: 1 1 auto; }
+  .my-event__cover { font-size: 0.625rem; }
 }

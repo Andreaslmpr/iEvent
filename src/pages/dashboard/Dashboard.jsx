@@ -12,7 +12,7 @@
    ============================================================ */
 import { useEffect, useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { getMyEvents, publishEvent, cancelEvent, deleteEvent } from '../../api/index.js'
+import { getMyEvents, publishEvent, cancelEvent, deleteEvent, mediaUrl } from '../../api/index.js'
 import Loader from '../../components/ui/Loader.jsx'
 import EmptyState from '../../components/ui/EmptyState.jsx'
 import Alert from '../../components/ui/Alert.jsx'
@@ -134,9 +134,19 @@ export default function Dashboard() {
               const status = EVENT_STATUS[event.status]
               const isDraft = event.status === 'DRAFT'
               const isPublished = event.status === 'PUBLISHED'
+              // Πληρότητα σε ποσοστό, για τη μπάρα κάτω από τα στοιχεία.
+              const fill = event.capacity > 0
+                ? Math.min(100, Math.round((event.reservedTotal / event.capacity) * 100))
+                : 0
               return (
                 <article key={event.id} className="card my-event">
-                  <div>
+                  <div className="my-event__cover" aria-hidden="true">
+                    {event.media?.length > 0
+                      ? <img src={mediaUrl(event.media[0])} alt="" loading="lazy" />
+                      : <span>{event.eventType}</span>}
+                  </div>
+
+                  <div className="my-event__main">
                     <h2 className="my-event__title">
                       <Link to={`/events/${event.id}`}>{event.title}</Link>
                       <span className={`badge ${status.variant}`}>{status.label}</span>
@@ -144,9 +154,14 @@ export default function Dashboard() {
                     <p className="my-event__meta">
                       {formatDateTime(event.startDateTime)} · {event.venue}, {event.city}
                     </p>
-                    <p className="my-event__seats">
-                      {event.reservedTotal} από {event.capacity} θέσεις κρατημένες
-                    </p>
+                    <div className="my-event__fill">
+                      <span className="my-event__bar">
+                        <span style={{ transform: `scaleX(${fill / 100})` }} />
+                      </span>
+                      <span className="my-event__seats">
+                        {event.reservedTotal} / {event.capacity} θέσεις κρατημένες
+                      </span>
+                    </div>
                   </div>
 
                   <div className="my-event__actions">

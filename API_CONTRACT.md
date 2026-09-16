@@ -120,6 +120,9 @@ Query params: `?page=1&pageSize=20`. Response wrapper:
   "id": 501,
   "eventId": 1024,
   "eventTitle": "Συναυλία Σύγχρονης Μουσικής",
+  "eventStartDateTime": "2026-07-12T20:30:00Z",
+  "eventStatus": "PUBLISHED",
+  "eventCover": "3f2a9c1e.jpg" | null,
   "attendee": { "id": 12, "username": "maria21" },
   "ticketTypeId": 1,
   "ticketTypeName": "General Admission",
@@ -350,6 +353,11 @@ Server checks (atomic / με transaction lock κατά overbooking):
 ---
 
 ## Changelog
+
+- **v1.3 (2026-09-16):** Προσθετική αλλαγή (δεν σπάει κανέναν client).
+  1. **Booking** — νέα πεδία `eventStartDateTime`, `eventStatus` και `eventCover`
+     (η πρώτη φωτογραφία της εκδήλωσης ή `null`). Η λίστα «Οι κρατήσεις μου»
+     δείχνει πότε γίνεται η εκδήλωση και αν ακυρώθηκε, χωρίς επιπλέον κλήσεις.
 
 - **v1.2 (2026-09-15):** Ευθυγράμμιση με την **εκφώνηση**, μετά από έλεγχο
   συμμόρφωσης. Τα 1 και 4 **αλλάζουν συμπεριφορά** — το frontend ενημερώθηκε.

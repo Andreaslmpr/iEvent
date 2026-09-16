@@ -9,7 +9,7 @@
    Η σύνθεση ξεκινά πάντα από εκδήλωση: άλλες σελίδες οδηγούν εδώ με
    ?event=<id> (μήνυμα στον διοργανωτή) ή ?to=<id>&toName=<username>.
    ============================================================ */
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { getInbox, getOutbox, getMessage, deleteMessage } from '../../api/index.js'
 import Loader from '../../components/ui/Loader.jsx'
@@ -39,6 +39,7 @@ export default function Messages() {
   const [notice, setNotice] = useState('')
   const [toDelete, setToDelete] = useState(null)
   const [deleting, setDeleting] = useState(false)
+  const viewRef = useRef(null)
 
   const isInbox = folder === 'inbox'
 
@@ -69,6 +70,13 @@ export default function Messages() {
 
     return () => { cancelled = true }
   }, [isInbox, page, reloadKey])
+
+  /* Σε κινητό το μήνυμα ανοίγει κάτω από τη λίστα — κυλάμε ως εκεί. */
+  useEffect(() => {
+    if (opened && window.matchMedia('(max-width: 860px)').matches) {
+      viewRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }
+  }, [opened])
 
   const reload = useCallback(() => setReloadKey((k) => k + 1), [])
 
@@ -158,9 +166,12 @@ export default function Messages() {
                   >
                     <span className="mail__top">
                       <span className="mail__who">
+                        <span className="mail__avatar" aria-hidden="true">
+                          {other.username[0]}
+                        </span>
                         {isInbox ? 'Από' : 'Προς'} @{other.username}
                       </span>
-                      <span className="mail__top">
+                      <span className="mail__flags">
                         {unread && <span className="mail__dot" aria-label="Μη αναγνωσμένο" />}
                         <span className="mail__date">{formatDateTime(message.sentAt)}</span>
                       </span>
@@ -175,8 +186,16 @@ export default function Messages() {
             <Pagination page={result.page} totalPages={result.totalPages} onChange={setPage} />
           </div>
 
+          {/* Σε desktop το δεξί πάνελ δεν μένει άδειο μέχρι να διαλέξεις μήνυμα. */}
+          {!opened && (
+            <div className="mail__placeholder">
+              <span className="mail__placeholder-icon" aria-hidden="true">✉</span>
+              <p>Διάλεξε ένα μήνυμα από τη λίστα για να το διαβάσεις.</p>
+            </div>
+          )}
+
           {opened && (
-            <article className="card mail__view">
+            <article className="card mail__view" ref={viewRef}>
               <h2 className="mail__view-subject">{opened.subject}</h2>
               <p className="mail__meta">
                 Από @{opened.fromUser.username} προς @{opened.toUser.username}

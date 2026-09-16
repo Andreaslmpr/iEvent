@@ -21,6 +21,12 @@
   --color-primary-soft: #fdeae6;  /* φόντο badges/highlights */
 
   --color-accent: #2b3a67;        /* deep indigo — headers, μενού */
+  --color-accent-deep: #1e2a4d;   /* σκουρότερο indigo — footer, ντεγκραντέ */
+  --color-on-accent: #ffffff;     /* κείμενο πάνω σε indigo/coral */
+  --color-on-accent-soft: rgba(255, 255, 255, 0.78);
+  --color-on-accent-line: rgba(255, 255, 255, 0.16);
+  --color-video-shade: rgba(20, 24, 45, 0.45);        /* σκίαση πάνω από βίντεο */
+  --color-video-shade-strong: rgba(20, 24, 45, 0.82);
 
   /* --- Καταστάσεις (status / feedback) --- */
   --color-success: #2e8b57;
@@ -32,7 +38,7 @@
 
   /* --- Τυπογραφία (web fonts με ελληνική υποστήριξη) --- */
   --font-sans: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
-  --font-display: 'Cormorant Garamond', Georgia, 'Times New Roman', serif; /* κομψό serif για τίτλους */
+  --font-display: 'EB Garamond', Georgia, 'Times New Roman', serif; /* κομψό serif με ελληνικά */
 
   --text-xs: 0.75rem;
   --text-sm: 0.875rem;
@@ -73,6 +79,9 @@
   --container-max: 1180px;
   --header-height: 64px;
 
-  /* --- Μεταβάσεις --- */
+  /* --- Μεταβάσεις ---
+     Ισχυρό ease-out: η κίνηση ξεκινά αμέσως, οπότε το UI «ακούει» το κλικ. */
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
   --transition: 160ms ease;
+  --transition-press: 140ms var(--ease-out);
 }

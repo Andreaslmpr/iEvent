@@ -69,6 +69,14 @@ export const BOOKING_STATUS = {
   CANCELLED: { label: 'Ακυρωμένη', variant: 'badge--danger' },
 }
 
+/* Πώς προσφωνούμε τον χρήστη. Ο διαχειριστής δημιουργείται αυτόματα με
+   όνομα «Application», οπότε γι' αυτόν δείχνουμε το username («admin»). */
+export function displayName(user) {
+  if (!user) return ''
+  if (user.role === 'ADMIN') return user.username
+  return user.firstName || user.username
+}
+
 /* Μήνυμα σφάλματος από απόκριση API (σχήμα error του contract). */
 export function errorMessage(err, fallback = 'Κάτι πήγε στραβά. Δοκιμάστε ξανά.') {
   return err?.response?.data?.error?.message || fallback

@@ -153,6 +153,11 @@ class BookingResponse(BaseModel):
     id: int
     eventId: int
     eventTitle: str
+    # Στοιχεία της εκδήλωσης για τη λίστα «Οι κρατήσεις μου» (v1.3): πότε
+    # γίνεται, αν ακυρώθηκε, και η πρώτη φωτογραφία της (ή null).
+    eventStartDateTime: datetime
+    eventStatus: str
+    eventCover: Optional[str] = None
     attendee: UserMini
     ticketTypeId: int
     ticketTypeName: str
@@ -167,7 +172,7 @@ class BookingResponse(BaseModel):
     def serialize_total_cost(self, value: Decimal) -> str:
         return f"{value:.2f}"
 
-    @field_serializer("time")
+    @field_serializer("time", "eventStartDateTime")
     def serialize_time(self, value: datetime) -> str:
         return to_utc_z(value)
 
@@ -180,6 +185,9 @@ class BookingResponse(BaseModel):
             id=booking.booking_id,
             eventId=booking.events_id,
             eventTitle=booking.event.title,
+            eventStartDateTime=booking.event.start_date_time,
+            eventStatus=booking.event.status,
+            eventCover=booking.event.media[0].filename if booking.event.media else None,
             attendee=UserMini.model_validate(booking.attendee),
             ticketTypeId=booking.ticket_types_id,
             ticketTypeName=booking.ticket_type.name,

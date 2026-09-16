@@ -14,27 +14,60 @@
 .mail__item {
   display: block;
   width: 100%;
+  min-width: 0;
   text-align: left;
   padding: var(--space-4);
   background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
-  transition: border-color var(--transition), background var(--transition);
+  transition:
+    border-color var(--transition), background var(--transition),
+    transform var(--transition-press);
 }
-.mail__item:hover { border-color: var(--color-primary); }
+.mail__item:active { transform: scale(0.99); }
+@media (hover: hover) {
+  .mail__item:hover { border-color: var(--color-primary); }
+}
 .mail__item--on { border-color: var(--color-primary); background: var(--color-primary-soft); }
 
 .mail__top {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: var(--space-2);
   justify-content: space-between;
 }
 
-.mail__who { font-size: var(--text-sm); font-weight: var(--weight-medium); }
+.mail__who {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+  white-space: nowrap;
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+}
+.mail__flags { display: flex; align-items: center; gap: var(--space-2); }
+
+.mail__avatar {
+  display: inline-grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 26px;
+  height: 26px;
+  border-radius: var(--radius-full);
+  background: var(--color-surface-2);
+  color: var(--color-accent);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-bold);
+  text-transform: uppercase;
+}
+.mail__item--on .mail__avatar { background: var(--color-surface); }
 .mail__date { font-size: var(--text-xs); color: var(--color-ink-faint); white-space: nowrap; }
 
 .mail__subject {
+  /* block: αλλιώς το ellipsis δεν εφαρμόζεται και το θέμα ξεχειλίζει. */
+  display: block;
   font-size: var(--text-sm);
   color: var(--color-ink-soft);
   margin-top: var(--space-1);
@@ -52,8 +85,33 @@
   flex-shrink: 0;
 }
 
+/* --- Κενό δεξί πάνελ --- */
+.mail__placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: 260px;
+  padding: var(--space-6);
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius-lg);
+  color: var(--color-ink-faint);
+  font-size: var(--text-sm);
+  text-align: center;
+}
+.mail__placeholder-icon { font-size: var(--text-3xl); line-height: 1; }
+
 /* --- Ανοιγμένο μήνυμα --- */
-.mail__view { padding: var(--space-5); position: sticky; top: var(--space-5); }
+.mail__view {
+  padding: var(--space-5);
+  position: sticky;
+  top: calc(var(--header-height) + var(--space-5));
+  animation: mail-in 200ms var(--ease-out);
+}
+@keyframes mail-in {
+  from { opacity: 0; transform: translateY(6px); }
+}
 .mail__view-subject { font-family: var(--font-display); font-size: var(--text-xl); }
 .mail__meta {
   font-size: var(--text-sm);
@@ -92,4 +150,5 @@
 @media (max-width: 860px) {
   .mail { grid-template-columns: 1fr; }
   .mail__view { position: static; }
+  .mail__placeholder { display: none; }
 }

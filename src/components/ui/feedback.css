@@ -8,6 +8,22 @@
   padding: var(--space-10) var(--space-5);
   text-align: center;
   color: var(--color-ink-soft);
+  background: var(--color-surface);
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius-lg);
+}
+
+.state--plain { background: none; border: none; }
+
+.state__icon {
+  display: inline-grid;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  border-radius: var(--radius-full);
+  background: var(--color-primary-soft);
+  color: var(--color-primary);
+  font-size: var(--text-2xl);
 }
 
 .state__title {

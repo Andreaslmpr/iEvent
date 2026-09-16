@@ -128,6 +128,13 @@ export default function EventDetail() {
     <div className="container page">
       <p className="detail__back"><Link to="/events">← Όλες οι εκδηλώσεις</Link></p>
 
+      {/* Εξώφυλλο: η πρώτη φωτογραφία, αλλιώς ντεγκραντέ με τον τύπο. */}
+      <div className={`detail__cover ${photos.length === 0 ? 'detail__cover--plain' : ''}`}>
+        {photos.length > 0
+          ? <img src={mediaUrl(photos[0])} alt="" />
+          : <span>{event.eventType}</span>}
+      </div>
+
       <header className="detail__head">
         <div className="detail__tags">
           {event.categories.map((c) => <span key={c} className="badge">{c}</span>)}
@@ -137,6 +144,7 @@ export default function EventDetail() {
         </div>
         <h1>{event.title}</h1>
         <p className="detail__when">{formatRange(event.startDateTime, event.endDateTime)}</p>
+        <p className="detail__where">{event.venue} · {event.city}</p>
       </header>
 
       <div className="detail__grid">

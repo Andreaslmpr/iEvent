@@ -2,27 +2,71 @@
 
 .booking-row {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: var(--space-4);
-  padding: var(--space-5);
-  align-items: start;
+  grid-template-columns: 112px minmax(0, 1fr) auto;
+  gap: var(--space-5);
+  padding: var(--space-4);
+  align-items: center;
 }
 
-.booking-row__title { font-size: var(--text-lg); font-family: var(--font-display); }
+/* Εξώφυλλο: φωτογραφία της εκδήλωσης ή «ημερολόγιο» με την ημερομηνία. */
+.booking-row__cover {
+  display: grid;
+  place-items: center;
+  aspect-ratio: 1;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: linear-gradient(135deg, var(--color-accent), var(--color-primary));
+}
+.booking-row__cover img { width: 100%; height: 100%; object-fit: cover; }
+
+.booking-row__day {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  color: var(--color-on-accent-soft);
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  line-height: 1.1;
+}
+.booking-row__day strong {
+  font-family: var(--font-display);
+  font-size: var(--text-3xl);
+  color: var(--color-on-accent);
+  font-variant-numeric: lining-nums;
+}
+
+.booking-row__title { font-size: var(--text-xl); font-family: var(--font-display); }
 .booking-row__title a { color: inherit; }
 .booking-row__title a:hover { color: var(--color-primary); }
+
+.booking-row__when {
+  color: var(--color-primary);
+  font-weight: var(--weight-medium);
+  font-size: var(--text-sm);
+  margin-top: var(--space-1);
+}
 
 .booking-row__meta {
   font-size: var(--text-sm);
   color: var(--color-ink-soft);
-  margin-top: var(--space-2);
+  margin-top: var(--space-1);
 }
 
 .booking-row__side { text-align: right; display: flex; flex-direction: column; gap: var(--space-2); align-items: flex-end; }
-.booking-row__cost { font-weight: var(--weight-bold); font-size: var(--text-lg); }
-.booking-row__time { font-size: var(--text-xs); color: var(--color-ink-faint); }
+.booking-row__cost { font-weight: var(--weight-bold); font-size: var(--text-xl); }
+.booking-row__time { font-size: var(--text-xs); color: var(--color-ink-faint); margin-top: var(--space-1); }
 
-@media (max-width: 620px) {
-  .booking-row { grid-template-columns: 1fr; }
-  .booking-row__side { text-align: left; align-items: flex-start; }
+@media (max-width: 700px) {
+  .booking-row { grid-template-columns: 72px minmax(0, 1fr); gap: var(--space-4); }
+  .booking-row__side {
+    grid-column: 1 / -1;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    text-align: left;
+    padding-top: var(--space-3);
+    border-top: 1px solid var(--color-border);
+  }
+  .booking-row__day strong { font-size: var(--text-xl); }
 }

@@ -32,6 +32,9 @@ h1, h2, h3, h4 {
   line-height: var(--leading-tight);
   font-weight: var(--weight-bold);
   color: var(--color-ink);
+  /* Ίσια (lining) ψηφία: «6 / 350» και όχι ανισοϋψή ψηφία παλιού στυλ. */
+  font-variant-numeric: lining-nums;
+  text-wrap: balance;
 }
 
 h1 { font-size: var(--text-3xl); }
@@ -70,9 +73,16 @@ button { cursor: pointer; }
   padding-inline: var(--space-5);
 }
 
+/* Το footer μένει πάντα στο κάτω μέρος, ακόμη και σε σύντομες σελίδες. */
+#root {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+main { flex: 1; }
+
 .page {
   padding-block: var(--space-8);
-  min-height: calc(100vh - var(--header-height));
 }
 
 /* --- Visually-hidden (accessibility) --- */

@@ -11,24 +11,32 @@ import './EventCard.css'
 export default function EventCard({ event }) {
   const from = minPrice(event)
   const seats = totalAvailable(event)
+  const start = new Date(event.startDateTime)
 
   return (
     <Link to={`/events/${event.id}`} className="card event-card">
-      {/* Εξώφυλλο: η πρώτη φωτογραφία, αλλιώς ο τύπος εκδήλωσης σε ντεγκραντέ. */}
-      {event.media?.length > 0 ? (
-        <img
-          src={mediaUrl(event.media[0])} alt="" loading="lazy"
-          className="event-card__thumb event-card__thumb--photo"
-        />
-      ) : (
-        <div className="event-card__thumb">{event.eventType}</div>
-      )}
+      <div className="event-card__media">
+        {/* Εξώφυλλο: η πρώτη φωτογραφία, αλλιώς ο τύπος εκδήλωσης σε ντεγκραντέ. */}
+        {event.media?.length > 0 ? (
+          <img
+            src={mediaUrl(event.media[0])} alt="" loading="lazy"
+            className="event-card__thumb event-card__thumb--photo"
+          />
+        ) : (
+          <div className="event-card__thumb">{event.eventType}</div>
+        )}
+        {/* «Ημερολόγιο» πάνω στο εξώφυλλο: η ημερομηνία με μια ματιά. */}
+        <span className="event-card__date" aria-hidden="true">
+          <strong>{start.getDate()}</strong>
+          {start.toLocaleDateString('el-GR', { month: 'short' })}
+        </span>
+      </div>
 
       <div className="event-card__body">
         <h3 className="event-card__title">{event.title}</h3>
 
         <p className="event-card__meta">{formatDateTime(event.startDateTime)}</p>
-        <p className="event-card__meta">
+        <p className="event-card__meta event-card__meta--place">
           {event.venue} · {event.city}
         </p>
 

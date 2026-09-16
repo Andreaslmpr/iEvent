@@ -2,23 +2,59 @@
   display: flex;
   flex-direction: column;
   color: inherit;
-  transition: transform var(--transition), box-shadow var(--transition);
+  transition: transform 200ms var(--ease-out), box-shadow 200ms var(--ease-out);
 }
-.event-card:hover {
-  transform: translateY(-3px);
+.event-card:hover { color: inherit; }
+.event-card:active { transform: scale(0.99); }
+
+/* Hover μόνο σε συσκευές με ποντίκι — στην αφή «κολλάει» μετά το tap. */
+@media (hover: hover) {
+  .event-card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-lg);
+  }
+  .event-card:hover .event-card__title { color: var(--color-primary); }
+}
+
+.event-card__media { position: relative; }
+
+.event-card__date {
+  position: absolute;
+  top: var(--space-3);
+  left: var(--space-3);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 48px;
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
   box-shadow: var(--shadow-md);
-  color: inherit;
+  color: var(--color-primary);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-medium);
+  text-transform: uppercase;
+  line-height: 1.1;
+}
+.event-card__date strong {
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  color: var(--color-ink);
+  font-variant-numeric: lining-nums;
 }
 
 /* «Κεφαλίδα» της κάρτας: η πρώτη φωτογραφία της εκδήλωσης, ή — αν δεν
    έχει φωτογραφίες — ο τύπος εκδήλωσης πάνω σε ντεγκραντέ. */
 .event-card__thumb {
-  height: 108px;
+  height: 140px;
   display: flex;
   align-items: flex-end;
+  justify-content: flex-end;
   padding: var(--space-3) var(--space-4);
-  background: linear-gradient(135deg, var(--color-accent), var(--color-primary));
-  color: #fff;
+  background:
+    radial-gradient(circle at 85% 20%, var(--color-on-accent-line), transparent 45%),
+    linear-gradient(135deg, var(--color-accent), var(--color-primary));
+  color: var(--color-on-accent);
   font-size: var(--text-xs);
   text-transform: uppercase;
   letter-spacing: 0.1em;
@@ -42,13 +78,19 @@
 }
 
 .event-card__title {
-  font-size: var(--text-lg);
+  font-size: var(--text-xl);
   font-family: var(--font-display);
+  transition: color var(--transition);
 }
 
 .event-card__meta {
   font-size: var(--text-sm);
   color: var(--color-ink-soft);
+}
+.event-card__meta--place {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .event-card__tags {

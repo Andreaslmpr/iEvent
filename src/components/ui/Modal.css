@@ -7,6 +7,7 @@
   justify-content: center;
   padding: var(--space-5);
   z-index: 100;
+  animation: modal-fade 200ms var(--ease-out);
 }
 
 .modal {
@@ -16,7 +17,12 @@
   width: 100%;
   max-width: 460px;
   padding: var(--space-6);
+  /* Εμφάνιση από ελαφρώς μικρότερο μέγεθος — ποτέ από scale(0). */
+  animation: modal-in 200ms var(--ease-out);
 }
+
+@keyframes modal-fade { from { opacity: 0; } }
+@keyframes modal-in { from { opacity: 0; transform: scale(0.96); } }
 
 .modal__title {
   font-size: var(--text-xl);

@@ -17,7 +17,31 @@
 /* ---------- Σελίδα εκδήλωσης ---------- */
 .detail__back { font-size: var(--text-sm); margin-bottom: var(--space-4); }
 
+.detail__cover {
+  height: clamp(160px, 28vw, 340px);
+  margin-bottom: var(--space-6);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  background: var(--color-surface-2);
+  box-shadow: var(--shadow-md);
+}
+.detail__cover img { width: 100%; height: 100%; object-fit: cover; }
+.detail__cover--plain {
+  display: flex;
+  align-items: flex-end;
+  padding: var(--space-5);
+  background:
+    radial-gradient(circle at 85% 20%, var(--color-on-accent-line), transparent 45%),
+    linear-gradient(120deg, var(--color-accent), var(--color-primary));
+  color: var(--color-on-accent);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+}
+
 .detail__head { margin-bottom: var(--space-6); }
+.detail__where { color: var(--color-ink-soft); font-size: var(--text-sm); margin-top: var(--space-1); }
 .detail__tags { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-bottom: var(--space-3); }
 .detail__when {
   color: var(--color-primary);
@@ -37,6 +61,10 @@
 .detail__text { color: var(--color-ink-soft); }
 
 .detail__facts {
+  padding: var(--space-5);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: var(--space-4);
@@ -51,9 +79,9 @@
 .detail__facts dd { font-size: var(--text-sm); }
 
 /* ---------- Πάνελ κράτησης ---------- */
-.detail__aside { position: sticky; top: var(--space-5); }
+.detail__aside { position: sticky; top: calc(var(--header-height) + var(--space-5)); }
 
-.booking { padding: var(--space-5); }
+.booking { padding: var(--space-5); box-shadow: var(--shadow-md); }
 .booking__title { font-size: var(--text-lg); margin-bottom: var(--space-4); }
 
 .booking__note {
@@ -74,7 +102,9 @@
   cursor: pointer;
   transition: border-color var(--transition), background var(--transition);
 }
-.ticket:hover { border-color: var(--color-primary); }
+@media (hover: hover) {
+  .ticket:hover { border-color: var(--color-primary); }
+}
 .ticket--on { border-color: var(--color-primary); background: var(--color-primary-soft); }
 .ticket--out { opacity: 0.55; cursor: not-allowed; }
 .ticket--out:hover { border-color: var(--color-border); }
@@ -97,7 +127,7 @@
   padding: var(--space-2) var(--space-3);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);
-  background: var(--color-bg);
+  background: var(--color-surface);
   font-size: var(--text-sm);
   text-align: center;
 }
@@ -144,4 +174,23 @@
   background: var(--color-surface-2);
   transition: box-shadow var(--transition);
 }
-.gallery a:hover .gallery__img { box-shadow: var(--shadow-md); }
+@media (hover: hover) {
+  .gallery a:hover .gallery__img { box-shadow: var(--shadow-md); }
+}
+
+/* ---------- Σελίδα 404 ---------- */
+.not-found { text-align: center; padding-block: var(--space-10); }
+.not-found__code {
+  font-family: var(--font-display);
+  font-size: clamp(5rem, 18vw, 9rem);
+  font-weight: var(--weight-bold);
+  line-height: 1;
+  font-variant-numeric: lining-nums;
+  background: linear-gradient(135deg, var(--color-accent), var(--color-primary));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.not-found__title { margin-top: var(--space-3); }
+.not-found__text { color: var(--color-ink-soft); margin: var(--space-3) 0 var(--space-6); }
+.not-found__actions { display: flex; gap: var(--space-3); justify-content: center; flex-wrap: wrap; }
