@@ -1,6 +1,6 @@
 <div align="center">
 
-# StayApp
+# iEvent
 
 **Διαχείριση εκδηλώσεων & ηλεκτρονικές κρατήσεις εισιτηρίων**<br>
 **Event management & online ticket booking**
