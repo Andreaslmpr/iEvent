@@ -380,7 +380,7 @@ VITE_USE_MOCK=true
 
 # 🇬🇧 English
 
-**Mandatory assignment — Web Application Technologies, 6th semester 2026**
+**Web Application Technologies**
 Department of Informatics & Telecommunications · Instructor: Dr. G. Chamodrakas
 
 ## Contents
@@ -401,7 +401,7 @@ Department of Informatics & Telecommunications · Instructor: Dr. G. Chamodrakas
 
 ## Overview
 
-StayApp is a web application where users create, discover and book seats at
+iEvent is a web application where users create, discover and book seats at
 events — concerts, performances, conferences, workshops.
 
 Every registered user is at once an **organizer** of the events they create and
