@@ -1,10 +1,10 @@
 {
-  "name": "stayapp-frontend",
+  "name": "ievent-frontend",
   "private": true,
   "version": "0.1.0",
   "type": "module",
   "license": "Apache-2.0",
-  "description": "StayApp — Frontend (React) για διαχείριση εκδηλώσεων & κρατήσεων",
+  "description": "iEvent — Frontend (React) για διαχείριση εκδηλώσεων & κρατήσεων",
   "scripts": {
     "dev": "vite",
     "build": "vite build",

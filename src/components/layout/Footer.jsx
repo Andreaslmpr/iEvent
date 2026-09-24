@@ -10,7 +10,7 @@ export default function Footer() {
     <footer className="footer">
       <div className="container footer__inner">
         <div>
-          <p className="footer__brand">Stay<span>App</span></p>
+          <p className="footer__brand">i<span>Event</span></p>
           <p className="footer__text">Εκδηλώσεις και ηλεκτρονικές κρατήσεις θέσεων.</p>
         </div>
 

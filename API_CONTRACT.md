@@ -1,4 +1,4 @@
-# StayApp — API Contract (v1)
+# iEvent — API Contract (v1)
 
 > **Source of truth** για backend (Ανδρέας / Python) ↔ frontend (Γιώργος / React).
 > Καμία αλλαγή χωρίς συμφωνία και των δύο. Κάθε αλλαγή → bump στο changelog στο τέλος.

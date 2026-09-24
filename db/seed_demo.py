@@ -369,7 +369,7 @@ def seed(db) -> None:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Δεδομένα επίδειξης StayApp")
+    parser = argparse.ArgumentParser(description="Δεδομένα επίδειξης iEvent")
     parser.add_argument("--reset", action="store_true",
                         help="σβήνει τα υπάρχοντα δεδομένα επίδειξης και τα ξαναφτιάχνει")
     args = parser.parse_args()

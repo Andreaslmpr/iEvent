@@ -61,7 +61,7 @@ async def lifespan(app: FastAPI):
 
 
 # Αρχικοποίηση της εφαρμογής
-app = FastAPI(title="StayApp API", lifespan=lifespan)
+app = FastAPI(title="iEvent API", lifespan=lifespan)
 
 # CORS: επιτρέπουμε στο React dev server να μιλάει με το API (API_CONTRACT.md )
 app.add_middleware(

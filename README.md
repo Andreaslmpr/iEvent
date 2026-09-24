@@ -374,7 +374,7 @@ VITE_USE_MOCK=true
 
 Διανέμεται με την άδεια **Apache License 2.0** — δείτε το αρχείο [`LICENSE`](LICENSE).
 
-<p align="right"><a href="#stayapp">↑ Επιστροφή στην αρχή</a></p>
+<p align="right"><a href="#ievent">↑ Επιστροφή στην αρχή</a></p>
 
 ---
 
@@ -729,4 +729,4 @@ meeting point.
 
 Distributed under the **Apache License 2.0** — see [`LICENSE`](LICENSE).
 
-<p align="right"><a href="#stayapp">↑ Back to top</a></p>
+<p align="right"><a href="#ievent">↑ Back to top</a></p>

@@ -37,7 +37,7 @@ export default function AuthLayout({ title, subtitle, children, wide = false }) 
         <div className="auth__aside-shade" aria-hidden="true" />
         <div className="auth__aside-content">
           <Link to="/" className="auth__brand">
-            Stay<span className="auth__brand-accent">App</span>
+            i<span className="auth__brand-accent">Event</span>
           </Link>
           <blockquote className="auth__quote">
             «Κάθε εκδήλωση είναι μια ιστορία.<br />Βρες τη δική σου θέση μέσα της.»

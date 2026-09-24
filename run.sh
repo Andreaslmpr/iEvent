@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Εκκίνηση του StayApp API πάνω από HTTPS (εκφώνηση §1: SSL/TLS υποχρεωτικό).
+# Εκκίνηση του iEvent API πάνω από HTTPS (εκφώνηση §1: SSL/TLS υποχρεωτικό).
 set -e
 cd "$(dirname "$0")"
 

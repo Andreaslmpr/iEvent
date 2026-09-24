@@ -26,7 +26,7 @@ client.interceptors.request.use((config) => {
    Το localStorage από μόνο του δεν ξυπνά το React: χωρίς αυτό, μετά τη λήξη
    του JWT ο χρήστης θα συνέχιζε να βλέπει συνδεδεμένο UI μέχρι να κάνει
    refresh, με κάθε κλήση να γυρίζει 401. */
-export const UNAUTHORIZED_EVENT = 'stayapp:unauthorized'
+export const UNAUTHORIZED_EVENT = 'ievent:unauthorized'
 
 /* Response interceptor: σε 401 (έληξε/άκυρο token) καθαρίζει το session.
 

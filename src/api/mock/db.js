@@ -12,7 +12,7 @@
 export const mockUsers = [
   {
     id: 1, username: 'admin', firstName: 'Δια', lastName: 'χειριστής',
-    email: 'admin@stayapp.gr', phone: '+302100000000', address: '—',
+    email: 'admin@ievent.gr', phone: '+302100000000', address: '—',
     city: 'Αθήνα', country: 'Greece', geoLocation: { lat: 37.98, lng: 23.72 },
     afm: '000000000', status: 'APPROVED', role: 'ADMIN',
     createdAt: '2026-01-01T00:00:00Z',

@@ -4,8 +4,8 @@
    αποθήκευσης, να αλλάξει μόνο εδώ.
    ============================================================ */
 
-const TOKEN_KEY = 'stayapp_token'
-const USER_KEY = 'stayapp_user'
+const TOKEN_KEY = 'ievent_token'
+const USER_KEY = 'ievent_user'
 
 export function getToken() {
   return localStorage.getItem(TOKEN_KEY)

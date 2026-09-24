@@ -33,7 +33,7 @@ export default function Header() {
     <header className="header">
       <div className="container header__inner">
         <Link to="/" className="header__brand">
-          Stay<span className="header__brand-accent">App</span>
+          i<span className="header__brand-accent">Event</span>
         </Link>
 
         <button
